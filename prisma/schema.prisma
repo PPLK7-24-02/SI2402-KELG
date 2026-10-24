@@ -1,0 +1,418 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+
+// ======================================================
+// ENUMS
+// ======================================================
+
+enum JenisPengguna {
+  MAHASISWA
+  STAFF
+  DOSEN
+}
+
+enum JenisLaporan {
+  REGULER
+  EMERGENCY
+}
+
+enum TingkatUrgensi {
+  RENDAH
+  SEDANG
+  TINGGI
+  DARURAT
+}
+
+enum StatusLaporan {
+  DITERIMA
+  REVIEW
+  DIVERIFIKASI
+  DITANGANI
+  SELESAI
+  TIDAK_VALID
+  DITUTUP
+}
+
+enum StatusRiwayat {
+  DITERIMA
+  REVIEW
+  DIVERIFIKASI
+  DITANGANI
+  SELESAI
+  TIDAK_VALID
+  DITUTUP
+}
+
+enum PeranPihak {
+  KORBAN
+  PELAKU
+  SAKSI
+  LAINNYA
+}
+
+enum StatusPermintaan {
+  TERKIRIM
+  DIBACA
+  DITANGGAPI
+  SELESAI
+}
+
+enum KeputusanPemeriksaan {
+  TERBUKTI
+  TIDAK_TERBUKTI
+  TIDAK_VALID
+  LAINNYA
+}
+
+enum StatusEdukasi {
+  DRAFT
+  PUBLISHED
+}
+
+enum StatusVerifikasiIncident {
+  PENDING
+  TERVERIFIKASI
+  DITOLAK
+}
+
+enum StatusPengirimanIncident {
+  BELUM_DIKIRIM
+  TERKIRIM
+  GAGAL
+}
+
+
+// ======================================================
+// PELAPOR
+// ======================================================
+
+model Pelapor {
+  idPelapor     String        @id @default(cuid()) @db.VarChar(30)
+  nama          String        @db.VarChar(150)
+  email         String        @unique @db.VarChar(150)
+  passwordHash  String        @db.VarChar(255)
+  jenisPengguna JenisPengguna
+  nimNip        String        @db.VarChar(50)
+  noHp          String        @db.VarChar(20)
+  createdAt     DateTime      @default(now())
+
+  laporan               Laporan[]
+  buktiLaporan          BuktiLaporan[]
+  permintaanInformasi   PermintaanInformasi[]
+  notifikasi            Notifikasi[]
+}
+
+
+// ======================================================
+// SATGAS PPKS
+// ======================================================
+
+model SatgasPPKS {
+  idSatgasPPKS String   @id @default(cuid()) @db.VarChar(30)
+  nama         String   @db.VarChar(150)
+  email        String   @unique @db.VarChar(150)
+  passwordHash String   @db.VarChar(255)
+  noHp         String   @db.VarChar(20)
+  createdAt    DateTime @default(now())
+
+  kontenEdukasi        KontenEdukasi[]
+  permintaanInformasi  PermintaanInformasi[]
+  riwayatPenanganan   RiwayatPenanganan[]
+  hasilPemeriksaan    HasilPemeriksaan[]
+  notifikasi           Notifikasi[]
+}
+
+
+// ======================================================
+// KATEGORI KASUS
+// ======================================================
+
+model KategoriKasus {
+  idKategori String @id @default(cuid()) @db.VarChar(30)
+  nama       String @db.VarChar(100)
+  deskripsi  String @db.Text
+
+  laporan Laporan[]
+}
+
+
+// ======================================================
+// LOKASI
+// ======================================================
+
+model Lokasi {
+  idLokasi   String @id @default(cuid()) @db.VarChar(30)
+  namaGedung String @db.VarChar(150)
+  area       String @db.VarChar(150)
+
+  laporan Laporan[]
+  cctv    CCTV[]
+}
+
+
+// ======================================================
+// LAPORAN
+// ======================================================
+
+model Laporan {
+  idLaporan      String         @id @default(cuid()) @db.VarChar(30)
+  nomorKasus     String         @unique @db.VarChar(50)
+  jenis          JenisLaporan
+  kronologi      String         @db.Text
+  waktuKejadian  DateTime
+  detailLokasi   String         @db.Text
+  isAnonim       Boolean        @default(false)
+  tingkatUrgensi TingkatUrgensi
+  status         StatusLaporan  @default(DITERIMA)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  // Foreign Key
+  pelaporId   String
+  kategoriId  String
+  lokasiId    String
+
+  // Relations
+  pelapor      Pelapor      @relation(fields: [pelaporId], references: [idPelapor])
+  kategori     KategoriKasus @relation(fields: [kategoriId], references: [idKategori])
+  lokasi       Lokasi       @relation(fields: [lokasiId], references: [idLokasi])
+
+  buktiLaporan        BuktiLaporan[]
+  pihakTerlibat       PihakTerlibat[]
+  permintaanInformasi PermintaanInformasi[]
+  riwayatPenanganan   RiwayatPenanganan[]
+  hasilPemeriksaan    HasilPemeriksaan[]
+  notifikasi          Notifikasi[]
+  incidentAlert       IncidentAlert[]
+  buktiCCTV           BuktiCCTV[]
+}
+
+
+// ======================================================
+// PIHAK TERLIBAT
+// ======================================================
+
+model PihakTerlibat {
+  idPihak     String     @id @default(cuid()) @db.VarChar(30)
+  nama        String     @db.VarChar(150)
+  peran       PeranPihak
+  keterangan  String?    @db.Text
+
+  laporanId String
+  laporan   Laporan @relation(fields: [laporanId], references: [idLaporan], onDelete: Cascade)
+}
+
+
+// ======================================================
+// BUKTI LAPORAN
+// ======================================================
+
+model BuktiLaporan {
+  idBukti   String   @id @default(cuid()) @db.VarChar(30)
+  namaFile  String   @db.VarChar(255)
+  tipeFile  String   @db.VarChar(100)
+  fileUrl   String   @db.VarChar(500)
+  uploadAt  DateTime @default(now())
+
+  laporanId String
+  pelaporId String
+
+  laporan Laporan @relation(fields: [laporanId], references: [idLaporan], onDelete: Cascade)
+  pelapor Pelapor @relation(fields: [pelaporId], references: [idPelapor])
+}
+
+
+// ======================================================
+// PERMINTAAN INFORMASI
+// ======================================================
+
+model PermintaanInformasi {
+  idPermintaan String           @id @default(cuid()) @db.VarChar(30)
+  isiPermintaan String         @db.Text
+  tanggal      DateTime         @default(now())
+  status       StatusPermintaan
+  createdAt    DateTime         @default(now())
+
+  laporanId String
+  satgasId  String
+  pelaporId String
+
+  laporan Laporan    @relation(fields: [laporanId], references: [idLaporan], onDelete: Cascade)
+  satgas  SatgasPPKS @relation(fields: [satgasId], references: [idSatgasPPKS])
+  pelapor Pelapor    @relation(fields: [pelaporId], references: [idPelapor])
+}
+
+
+// ======================================================
+// RIWAYAT PENANGANAN / STATUS LOG
+// ======================================================
+
+model RiwayatPenanganan {
+  idRiwayat    String         @id @default(cuid()) @db.VarChar(30)
+  jenisAktivitas String       @db.VarChar(150)
+  statusLama   StatusRiwayat?
+  statusBaru   StatusRiwayat?
+  catatan      String?        @db.Text
+  createdAt    DateTime       @default(now())
+
+  laporanId String
+  satgasId  String
+
+  laporan Laporan    @relation(fields: [laporanId], references: [idLaporan], onDelete: Cascade)
+  satgas  SatgasPPKS @relation(fields: [satgasId], references: [idSatgasPPKS])
+}
+
+
+// ======================================================
+// HASIL PEMERIKSAAN
+// ======================================================
+
+model HasilPemeriksaan {
+  idHasil            String               @id @default(cuid()) @db.VarChar(30)
+  tanggalPemeriksaan DateTime
+  hasil              String               @db.Text
+  keputusan          KeputusanPemeriksaan
+  kesimpulan         String               @db.Text
+  tindakLanjut       String               @db.Text
+  tanggalTindakan    DateTime?
+
+  laporanId String
+  satgasId  String
+
+  laporan Laporan    @relation(fields: [laporanId], references: [idLaporan], onDelete: Cascade)
+  satgas  SatgasPPKS @relation(fields: [satgasId], references: [idSatgasPPKS])
+}
+
+
+// ======================================================
+// NOTIFIKASI
+// ======================================================
+
+model Notifikasi {
+  idNotif  String   @id @default(cuid()) @db.VarChar(30)
+  judul    String   @db.VarChar(200)
+  pesan    String   @db.Text
+  tipe     String   @db.VarChar(50)
+  isRead   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  laporanId      String?
+  pelaporId      String?
+  satgasId       String?
+  incidentAlertId String?
+
+  laporan       Laporan?       @relation(fields: [laporanId], references: [idLaporan], onDelete: Cascade)
+  pelapor       Pelapor?       @relation(fields: [pelaporId], references: [idPelapor])
+  satgas        SatgasPPKS?    @relation(fields: [satgasId], references: [idSatgasPPKS])
+  incidentAlert IncidentAlert? @relation(fields: [incidentAlertId], references: [idIncident])
+}
+
+
+// ======================================================
+// CCTV
+// ======================================================
+
+model CCTV {
+  idCCTV    String  @id @default(cuid()) @db.VarChar(30)
+  kodeKamera String @unique @db.VarChar(100)
+  posisi    String  @db.VarChar(255)
+  streamUrl String  @db.VarChar(500)
+  isAktif   Boolean @default(true)
+
+  lokasiId String
+  lokasi   Lokasi @relation(fields: [lokasiId], references: [idLokasi])
+
+  deteksiAI DeteksiAI[]
+  buktiCCTV BuktiCCTV[]
+}
+
+
+// ======================================================
+// DETEKSI AI
+// ======================================================
+
+model DeteksiAI {
+  idAI                String   @id @default(cuid()) @db.VarChar(30)
+  waktuDeteksi        DateTime
+  jenisIsyarat        String   @db.VarChar(100)
+  confidenceScore     Decimal  @db.Decimal(5, 4)
+  memenuhiThreshold   Boolean
+  snapshotUrl         String?  @db.VarChar(500)
+
+  cctvId String
+  cctv   CCTV @relation(fields: [cctvId], references: [idCCTV])
+
+  incidentAlert IncidentAlert?
+}
+
+
+// ======================================================
+// INCIDENT ALERT
+// ======================================================
+
+model IncidentAlert {
+  idIncident       String                  @id @default(cuid()) @db.VarChar(30)
+  statusVerifikasi StatusVerifikasiIncident @default(PENDING)
+  statusPengiriman StatusPengirimanIncident @default(BELUM_DIKIRIM)
+  catatanVerifikasi String?               @db.Text
+  createdAt        DateTime                @default(now())
+
+  deteksiAIId String @unique
+  laporanId   String?
+
+  deteksiAI DeteksiAI @relation(fields: [deteksiAIId], references: [idAI])
+  laporan   Laporan?  @relation(fields: [laporanId], references: [idLaporan])
+
+  notifikasi Notifikasi[]
+}
+
+
+// ======================================================
+// BUKTI CCTV
+// ======================================================
+
+model BuktiCCTV {
+  idBuktiCCTV    String   @id @default(cuid()) @db.VarChar(30)
+  tanggalRekaman DateTime
+  timestampMulai DateTime
+  timestampAkhir DateTime
+  fileUrl        String   @db.VarChar(500)
+  catatan        String?  @db.Text
+
+  laporanId String
+  cctvId    String
+
+  laporan Laporan @relation(fields: [laporanId], references: [idLaporan], onDelete: Cascade)
+  cctv    CCTV    @relation(fields: [cctvId], references: [idCCTV])
+}
+
+
+// ======================================================
+// KONTEN EDUKASI
+// ======================================================
+
+model KontenEdukasi {
+  idEdukasi String        @id @default(cuid()) @db.VarChar(30)
+  judul     String        @db.VarChar(255)
+  kategori  String        @db.VarChar(100)
+  isi       String        @db.Text
+  status    StatusEdukasi @default(DRAFT)
+  mediaUrl  String?       @db.VarChar(500)
+  updatedAt DateTime      @updatedAt
+  createdAt DateTime      @default(now())
+
+  satgasId String
+  satgas   SatgasPPKS @relation(fields: [satgasId], references: [idSatgasPPKS])
+}

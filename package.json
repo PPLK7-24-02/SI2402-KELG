@@ -9,13 +9,23 @@
     "lint": "eslint"
   },
   "dependencies": {
+<<<<<<< HEAD
+    "@hookform/resolvers": "^5.9.2",
+    "bcryptjs": "^3.0.3",
+    "jose": "^6.2.13",
+    "lucide-react": "^1.61.0",
+    "next": "16.3.8",
+=======
     "@prisma/adapter-mariadb": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "dotenv": "^18.0.9",
     "next": "^16.4.3",
+>>>>>>> origin/main
     "next-auth": "^4.24.15",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "react-hook-form": "^7.91.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

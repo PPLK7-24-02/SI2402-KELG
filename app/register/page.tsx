@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { FormEvent } from "react";
 
@@ -27,6 +28,7 @@ const formAwal: FormRegistrasi = {
 };
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [form, setForm] = useState<FormRegistrasi>(formAwal);
   const [pesan, setPesan] = useState("");
   const [berhasil, setBerhasil] = useState(false);
@@ -80,7 +82,7 @@ export default function RegisterPage() {
       setForm(formAwal);
 
       window.setTimeout(() => {
-        window.location.assign("/login");
+        router.push("/login");
       }, 1500);
     } catch {
       setPesan("Tidak dapat terhubung ke server. Silakan coba lagi.");

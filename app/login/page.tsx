@@ -1,9 +1,12 @@
 
 "use client";
 
+import { getSession, signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -22,29 +25,35 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          identifier: identifier.trim(),
-          password,
-        }),
+      const result = await signIn("credentials", {
+        redirect: false,
+        email: identifier.trim(),
+        password,
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        setError(result.message || "Email atau kata sandi tidak valid.");
+      if (!result || result.error) {
+        setError("Email atau kata sandi tidak valid.");
         return;
       }
 
-      // Sesuaikan dengan route tujuan berdasarkan role
-      if (result.role === "SATGAS") {
-        window.location.href = "/satgas/dashboard";
+      const session = await getSession();
+      const callbackUrl = new URLSearchParams(
+        window.location.search
+      ).get("callbackUrl");
+      const requestedUrl = callbackUrl
+        ? new URL(callbackUrl, window.location.origin)
+        : null;
+
+      if (requestedUrl?.origin === window.location.origin) {
+        router.push(
+          `${requestedUrl.pathname}${requestedUrl.search}${requestedUrl.hash}`
+        );
+      } else if (session?.user.role === "SATGAS") {
+        router.push("/satgas/dashboard");
+      } else if (session?.user.role === "PELAPOR") {
+        router.push("/dashboard");
       } else {
-        window.location.href = "/dashboard";
+        setError("Sesi login tidak dapat diverifikasi. Silakan coba lagi.");
       }
     } catch {
       setError(

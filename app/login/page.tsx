@@ -1,4 +1,3 @@
-
 "use client";
 
 import { getSession, signIn } from "next-auth/react";
@@ -38,18 +37,7 @@ export default function LoginPage() {
 
       const session = await getSession();
 
-      const callbackUrl = new URLSearchParams(
-        window.location.search
-      ).get("callbackUrl");
-      const requestedUrl = callbackUrl
-        ? new URL(callbackUrl, window.location.origin)
-        : null;
-
-      if (requestedUrl?.origin === window.location.origin) {
-        router.push(
-          `${requestedUrl.pathname}${requestedUrl.search}${requestedUrl.hash}`
-        );
-      } else if (session?.user.role === "SATGAS") {
+      if (session?.user.role === "SATGAS") {
         router.push("/satgas-ppks");
       } else if (session?.user.role === "PELAPOR") {
         router.push("/pelapor");

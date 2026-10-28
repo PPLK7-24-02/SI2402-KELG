@@ -171,6 +171,7 @@ model Laporan {
   nomorKasus     String         @unique @db.VarChar(50)
   jenis          JenisLaporan
   kronologi      String         @db.Text
+  keteranganTambahan String?    @db.Text
   waktuKejadian  DateTime
   detailLokasi   String         @db.Text
   isAnonim       Boolean        @default(false)

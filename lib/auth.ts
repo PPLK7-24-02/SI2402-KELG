@@ -108,7 +108,6 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
 
-    // Teruskan data JWT ke session yang dapat dibaca server
     async session({ session, token }) {
       if (session.user) {
         if (token.sub) {

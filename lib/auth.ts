@@ -2,13 +2,16 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-
 import prisma from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
+  session: {
+    strategy: "jwt",
+  },
+
   providers: [
     CredentialsProvider({
-      name: "Email dan Password",
+      name: "Login SAFE SPACE",
 
       credentials: {
         identifier: {
@@ -16,31 +19,82 @@ export const authOptions: NextAuthOptions = {
           type: "text",
         },
         password: {
-          label: "Password",
+          label: "Kata sandi",
           type: "password",
         },
       },
 
       async authorize(credentials) {
-        const email = credentials?.identifier?.trim().toLowerCase();
+        const identifier = credentials?.identifier;
         const password = credentials?.password;
 
-        if (!email || !password) {
+        if (
+          typeof identifier !== "string" ||
+          typeof password !== "string" ||
+          !identifier.trim() ||
+          !password
+        ) {
           return null;
         }
 
-        // 1. Periksa akun pelapor
-        const pelapor = await prisma.pelapor.findUnique({
-          where: { email },
-        });
+        const normalizedIdentifier = identifier.trim().toLowerCase();
 
-        if (pelapor) {
-          const passwordCocok = await bcrypt.compare(
+        try {
+          // 1. Cek akun di tabel SATGAS PPKS
+          const satgas = await prisma.satgasPPKS.findFirst({
+            where: {
+              OR: [
+                { email: normalizedIdentifier },
+                { nama: identifier },
+              ],
+            },
+          });
+
+          if (satgas) {
+            const isBcryptHash = /^\$2[aby]\$\d{2}\$/.test(
+              satgas.passwordHash
+            );
+            const passwordValid = isBcryptHash
+              ? await bcrypt.compare(password, satgas.passwordHash)
+              : password === satgas.passwordHash;
+
+            if (!passwordValid) {
+              return null;
+            }
+
+            if (!isBcryptHash) {
+              const passwordHash = await bcrypt.hash(password, 12);
+              await prisma.satgasPPKS.update({
+                where: { idSatgasPPKS: satgas.idSatgasPPKS },
+                data: { passwordHash },
+              });
+            }
+
+            return {
+              id: String(satgas.idSatgasPPKS),
+              name: satgas.nama,
+              email: satgas.email,
+              role: "SATGAS",
+            };
+          }
+
+          // 2. Jika bukan Satgas, cek akun di tabel PELAPOR
+          const pelapor = await prisma.pelapor.findUnique({
+            where: {
+              email: normalizedIdentifier,
+            },
+          });
+
+          if (!pelapor) {
+            return null;
+          }
+
+          const passwordValid = await bcrypt.compare(
             password,
             pelapor.passwordHash
           );
 
-          if (!passwordCocok) {
+          if (!passwordValid) {
             return null;
           }
 
@@ -51,49 +105,15 @@ export const authOptions: NextAuthOptions = {
             role: "PELAPOR",
             jenisPengguna: pelapor.jenisPengguna,
           };
+        } catch (error) {
+          console.error("[AUTH] Kesalahan autentikasi:", error);
+          throw error;
         }
-
-        // 2. Jika bukan pelapor, periksa akun Satgas
-        const satgas = await prisma.satgasPPKS.findUnique({
-          where: { email },
-        });
-
-        if (!satgas) {
-          return null;
-        }
-
-        const passwordCocok = await bcrypt.compare(
-          password,
-          satgas.passwordHash
-        );
-
-        if (!passwordCocok) {
-          return null;
-        }
-
-        return {
-          id: String(satgas.idSatgasPPKS),
-          name: satgas.nama,
-          email: satgas.email,
-          role: "SATGAS",
-        };
-      },
+      }
     }),
   ],
 
-  // Credentials Provider menggunakan JWT untuk sesi login
-  session: {
-    strategy: "jwt",
-  },
-
-  secret: process.env.NEXTAUTH_SECRET,
-
-  pages: {
-    signIn: "/login",
-  },
-
   callbacks: {
-    // Simpan data pengguna ke dalam JWT setelah login berhasil
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
@@ -103,6 +123,8 @@ export const authOptions: NextAuthOptions = {
         } else {
           delete token.jenisPengguna;
         }
+      } else if (!token.sub && typeof token.id === "string") {
+        token.sub = token.id;
       }
 
       return token;
@@ -113,11 +135,9 @@ export const authOptions: NextAuthOptions = {
         if (token.sub) {
           session.user.id = token.sub;
         }
-
         if (token.role) {
           session.user.role = token.role;
         }
-
         if (token.jenisPengguna) {
           session.user.jenisPengguna = token.jenisPengguna;
         }
@@ -126,4 +146,10 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+
+  pages: {
+    signIn: "/login",
+  },
+
+  secret: process.env.NEXTAUTH_SECRET,
 };

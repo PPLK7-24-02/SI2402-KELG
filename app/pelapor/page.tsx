@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 
 type DashboardData = {
   pelapor: {
@@ -122,7 +123,7 @@ function Icon({
   name: IconName;
   className?: string;
 }) {
-  const paths: Record<IconName, React.ReactNode> = {
+  const paths: Record<IconName, ReactNode> = {
     home: (
       <>
         <path d="m3 10 9-7 9 7" />

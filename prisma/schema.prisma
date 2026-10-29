@@ -37,22 +37,18 @@ enum TingkatUrgensi {
 
 enum StatusLaporan {
   DITERIMA
-  REVIEW
   DIVERIFIKASI
   DITANGANI
   SELESAI
   TIDAK_VALID
-  DITUTUP
 }
 
 enum StatusRiwayat {
   DITERIMA
-  REVIEW
   DIVERIFIKASI
   DITANGANI
   SELESAI
   TIDAK_VALID
-  DITUTUP
 }
 
 enum PeranPihak {

@@ -2,8 +2,8 @@
 "use client";
 
 import { getSession, signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,7 +27,7 @@ export default function LoginPage() {
     try {
       const result = await signIn("credentials", {
         redirect: false,
-        email: identifier.trim(),
+        identifier: identifier.trim(),
         password,
       });
 
@@ -37,6 +37,7 @@ export default function LoginPage() {
       }
 
       const session = await getSession();
+
       const callbackUrl = new URLSearchParams(
         window.location.search
       ).get("callbackUrl");
@@ -49,9 +50,9 @@ export default function LoginPage() {
           `${requestedUrl.pathname}${requestedUrl.search}${requestedUrl.hash}`
         );
       } else if (session?.user.role === "SATGAS") {
-        router.push("/satgas/dashboard");
+        router.push("/satgas-ppks");
       } else if (session?.user.role === "PELAPOR") {
-        router.push("/dashboard");
+        router.push("/pelapor");
       } else {
         setError("Sesi login tidak dapat diverifikasi. Silakan coba lagi.");
       }
@@ -283,6 +284,17 @@ export default function LoginPage() {
                   </svg>
                 )}
               </button>
+              <div className="text-center">
+                <p className="text-xs text-[#71839c]">
+                  Belum punya akun?{" "}
+                  <a
+                    href="http://localhost:3000/register"
+                    className="font-bold text-[#107b73] transition hover:text-[#0c6b64] hover:underline focus:outline-none focus:underline"
+                  >
+                    Registrasi akun
+                  </a>
+                </p>
+              </div>
             </form>
 
             {/* Informasi keamanan */}

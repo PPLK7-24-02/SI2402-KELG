@@ -55,6 +55,7 @@ export async function POST(request: Request) {
       {
         message: "Login berhasil",
         role: pelapor ? "PELAPOR" : "SATGAS",
+        jenisPengguna: pelapor?.jenisPengguna ?? null,
       },
       { status: 200 }
     );

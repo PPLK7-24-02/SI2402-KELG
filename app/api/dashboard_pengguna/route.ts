@@ -17,7 +17,7 @@ export async function GET() {
           message: "Pengguna belum login atau tidak terautentikasi.",
           callbackUrl: "/pelapor",
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -27,7 +27,7 @@ export async function GET() {
           success: false,
           message: "Pengguna tidak memiliki akses ke dashboard pelapor.",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -45,7 +45,7 @@ export async function GET() {
           success: false,
           message: "Data pelapor tidak ditemukan.",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -131,7 +131,7 @@ export async function GET() {
       {
         label: "Buat Laporan",
         deskripsi: "Sampaikan kejadian secara aman.",
-        path: "/buat-laporan",
+        path: "/pelapor/buat-laporan",
       },
       {
         label: "Emergency Report",
@@ -180,7 +180,7 @@ export async function GET() {
         success: false,
         message: "Terjadi kesalahan saat mengambil data dashboard.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

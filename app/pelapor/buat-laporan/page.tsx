@@ -10,7 +10,7 @@ export default async function BuatLaporanPage() {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id || session.user.role !== "PELAPOR") {
-    redirect("/login?callbackUrl=/laporan/buat");
+    redirect("/login?callbackUrl=/pelapor/buat-laporan");
   }
 
   const [kategori, lokasi] = await Promise.all([

@@ -296,7 +296,7 @@ export default function ReportForm({
     <main className="min-h-screen bg-[#f3f6f9] text-[#20384e] lg:flex">
       <aside className="flex w-full shrink-0 flex-col bg-[#183650] text-white lg:sticky lg:top-0 lg:h-screen lg:w-[224px]">
         <div className="flex items-center justify-between px-5 py-4 lg:block lg:px-6 lg:py-7">
-          <Link href="/laporan/buat" className="block">
+          <Link href="/pelapor/buat-laporan" className="block">
             <span className="text-sm font-extrabold tracking-[0.12em]">SAFE SPACE</span>
             <span className="mt-0.5 block text-[10px] text-[#a9bbca]">Portal Pelapor</span>
           </Link>
@@ -312,7 +312,7 @@ export default function ReportForm({
           <a href="#" aria-disabled="true" className="flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-xs text-[#c5d2dc] opacity-70 lg:w-full">
             <Icon name="home" /> Dashboard
           </a>
-          <Link href="/laporan/buat" aria-current="page" className="flex shrink-0 items-center gap-3 rounded-lg bg-[#078779] px-3 py-2.5 text-xs font-semibold text-white shadow-sm lg:w-full">
+          <Link href="/pelapor/buat-laporan" aria-current="page" className="flex shrink-0 items-center gap-3 rounded-lg bg-[#078779] px-3 py-2.5 text-xs font-semibold text-white shadow-sm lg:w-full">
             <Icon name="edit" /> Buat Laporan
           </Link>
           <a href="#" aria-disabled="true" className="flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-xs text-[#c5d2dc] opacity-70 lg:w-full">

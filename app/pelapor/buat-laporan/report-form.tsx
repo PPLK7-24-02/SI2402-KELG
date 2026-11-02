@@ -309,7 +309,7 @@ export default function ReportForm({
           <p className="hidden px-3 pb-2 text-[9px] font-bold uppercase tracking-[0.16em] text-[#9aafbf] lg:block">
             Menu Pelapor
           </p>
-          <a href="#" aria-disabled="true" className="flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-xs text-[#c5d2dc] opacity-70 lg:w-full">
+          <a href="/pelapor" className="flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-xs text-[#c5d2dc] opacity-70 lg:w-full">
             <Icon name="home" /> Dashboard
           </a>
           <Link href="/pelapor/buat-laporan" aria-current="page" className="flex shrink-0 items-center gap-3 rounded-lg bg-[#078779] px-3 py-2.5 text-xs font-semibold text-white shadow-sm lg:w-full">

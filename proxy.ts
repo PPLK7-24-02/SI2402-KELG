@@ -16,12 +16,7 @@ export async function proxy(request: NextRequest) {
 
   if (!token?.role) {
     if (isPelaporRoute || isSatgasRoute) {
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set(
-        "callbackUrl",
-        `${pathname}${request.nextUrl.search}`
-      );
-      return NextResponse.redirect(loginUrl);
+      return NextResponse.redirect(new URL("/login", request.url));
     }
 
     return NextResponse.next();

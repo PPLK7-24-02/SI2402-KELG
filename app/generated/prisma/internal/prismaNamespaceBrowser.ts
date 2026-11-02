@@ -134,6 +134,7 @@ export const LaporanScalarFieldEnum = {
   nomorKasus: 'nomorKasus',
   jenis: 'jenis',
   kronologi: 'kronologi',
+  keteranganTambahan: 'keteranganTambahan',
   waktuKejadian: 'waktuKejadian',
   detailLokasi: 'detailLokasi',
   isAnonim: 'isAnonim',
@@ -348,10 +349,19 @@ export const LokasiOrderByRelevanceFieldEnum = {
 export type LokasiOrderByRelevanceFieldEnum = (typeof LokasiOrderByRelevanceFieldEnum)[keyof typeof LokasiOrderByRelevanceFieldEnum]
 
 
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
 export const LaporanOrderByRelevanceFieldEnum = {
   idLaporan: 'idLaporan',
   nomorKasus: 'nomorKasus',
   kronologi: 'kronologi',
+  keteranganTambahan: 'keteranganTambahan',
   detailLokasi: 'detailLokasi',
   pelaporId: 'pelaporId',
   kategoriId: 'kategoriId',
@@ -359,14 +369,6 @@ export const LaporanOrderByRelevanceFieldEnum = {
 } as const
 
 export type LaporanOrderByRelevanceFieldEnum = (typeof LaporanOrderByRelevanceFieldEnum)[keyof typeof LaporanOrderByRelevanceFieldEnum]
-
-
-export const NullsOrder = {
-  first: 'first',
-  last: 'last'
-} as const
-
-export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
 export const PihakTerlibatOrderByRelevanceFieldEnum = {

@@ -38,12 +38,10 @@ export type TingkatUrgensi = (typeof TingkatUrgensi)[keyof typeof TingkatUrgensi
 
 export const StatusLaporan = {
   DITERIMA: 'DITERIMA',
-  REVIEW: 'REVIEW',
   DIVERIFIKASI: 'DIVERIFIKASI',
   DITANGANI: 'DITANGANI',
   SELESAI: 'SELESAI',
-  TIDAK_VALID: 'TIDAK_VALID',
-  DITUTUP: 'DITUTUP'
+  TIDAK_VALID: 'TIDAK_VALID'
 } as const
 
 export type StatusLaporan = (typeof StatusLaporan)[keyof typeof StatusLaporan]
@@ -51,12 +49,10 @@ export type StatusLaporan = (typeof StatusLaporan)[keyof typeof StatusLaporan]
 
 export const StatusRiwayat = {
   DITERIMA: 'DITERIMA',
-  REVIEW: 'REVIEW',
   DIVERIFIKASI: 'DIVERIFIKASI',
   DITANGANI: 'DITANGANI',
   SELESAI: 'SELESAI',
-  TIDAK_VALID: 'TIDAK_VALID',
-  DITUTUP: 'DITUTUP'
+  TIDAK_VALID: 'TIDAK_VALID'
 } as const
 
 export type StatusRiwayat = (typeof StatusRiwayat)[keyof typeof StatusRiwayat]

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { useRef, useState } from "react";
 import type { ChangeEvent, FormEvent, ReactNode } from "react";
 
@@ -62,6 +63,7 @@ function Icon({
     close: <><path d="m18 6-12 12M6 6l12 12" /></>,
     check: <><path d="m5 12 4 4L19 6" /></>,
     arrow: <><path d="m9 18 6-6-6-6" /></>,
+    chevron: <path d="m9 18 6-6-6-6" />,
     send: <><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></>,
     clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
     calendar: <><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></>,
@@ -113,15 +115,15 @@ function CardHeading({
 }) {
   return (
     <div className="mb-5 flex items-start gap-3">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#e7f5f2] text-[#087f73]">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#e7f5f2] text-[#0d8277]">
         <Icon name={icon} className="h-[18px] w-[18px]" />
       </span>
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#07877b]">
+        <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#0d8277]">
           Langkah {step}
         </p>
-        <h2 className="mt-0.5 text-base font-bold text-[#203c54]">{title}</h2>
-        <p className="mt-1 text-xs leading-5 text-[#718092]">{subtitle}</p>
+        <h2 className="mt-0.5 text-base font-bold text-[#193652]">{title}</h2>
+        <p className="mt-1 text-xs leading-5 text-slate-500">{subtitle}</p>
       </div>
     </div>
   );
@@ -293,84 +295,124 @@ export default function ReportForm({
   }
 
   return (
-    <main className="min-h-screen bg-[#f3f6f9] text-[#20384e] lg:flex">
-      <aside className="flex w-full shrink-0 flex-col bg-[#183650] text-white lg:sticky lg:top-0 lg:h-screen lg:w-[224px]">
-        <div className="flex items-center justify-between px-5 py-4 lg:block lg:px-6 lg:py-7">
-          <Link href="/pelapor/buat-laporan" className="block">
-            <span className="text-sm font-extrabold tracking-[0.12em]">SAFE SPACE</span>
-            <span className="mt-0.5 block text-[10px] text-[#a9bbca]">Portal Pelapor</span>
-          </Link>
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-[#9de4d8] lg:hidden">
-            <Icon name="user" />
+    <main className="min-h-screen bg-[#f3f6fa] text-[#193652] md:flex">
+      <aside className="flex w-full shrink-0 flex-col bg-[#193652] text-white md:sticky md:top-0 md:h-screen md:w-60">
+        <div className="flex items-center justify-between px-5 py-5 md:block md:px-6 md:py-7">
+          <div>
+            <span className="text-sm font-extrabold tracking-wide">SAFE SPACE</span>
+            <span className="mt-1 block text-[10px] text-slate-300">Portal Pelapor</span>
+          </div>
+          <span className="rounded-full bg-white/10 p-2 text-slate-200 md:hidden">
+            <Icon name="shield" className="h-4 w-4" />
           </span>
         </div>
 
-        <nav className="flex gap-1 overflow-x-auto px-3 pb-3 lg:mt-8 lg:block lg:space-y-1 lg:px-3">
-          <p className="hidden px-3 pb-2 text-[9px] font-bold uppercase tracking-[0.16em] text-[#9aafbf] lg:block">
+        <nav
+          aria-label="Menu pelapor"
+          className="flex gap-1 overflow-x-auto px-3 pb-3 md:block md:px-3 md:pb-0"
+        >
+          <p className="hidden px-3 pb-3 pt-5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400 md:block">
             Menu Pelapor
           </p>
-          <a href="/pelapor" className="flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-xs text-[#c5d2dc] opacity-70 lg:w-full">
-            <Icon name="home" /> Dashboard
-          </a>
-          <Link href="/pelapor/buat-laporan" aria-current="page" className="flex shrink-0 items-center gap-3 rounded-lg bg-[#078779] px-3 py-2.5 text-xs font-semibold text-white shadow-sm lg:w-full">
-            <Icon name="edit" /> Buat Laporan
-          </Link>
-          <a href="#" aria-disabled="true" className="flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-xs text-[#c5d2dc] opacity-70 lg:w-full">
-            <Icon name="alert" /> Emergency Report
-          </a>
-          <a href="#" aria-disabled="true" className="hidden items-center gap-3 rounded-lg px-3 py-2.5 text-xs text-[#c5d2dc] opacity-70 lg:flex">
-            <Icon name="search" /> Case Tracking
-          </a>
-          <a href="#" aria-disabled="true" className="hidden items-center gap-3 rounded-lg px-3 py-2.5 text-xs text-[#c5d2dc] opacity-70 lg:flex">
-            <Icon name="book" /> Edukasi
-          </a>
+          {[
+            { label: "Dashboard", href: "/pelapor", icon: "home" },
+            { label: "Buat Laporan", href: "/pelapor/buat-laporan", icon: "edit" },
+            { label: "Emergency Report", href: "#", icon: "alert" },
+            { label: "Case Tracking", href: "#", icon: "search" },
+            { label: "Edukasi", href: "#", icon: "book" },
+          ].map((item, index) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              aria-current={index === 1 ? "page" : undefined}
+              aria-disabled={item.href === "#" ? true : undefined}
+              className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-medium transition-colors ${index === 1
+                  ? "bg-[#0d8277] text-white shadow-sm md:w-full"
+                  : item.label === "Emergency Report"
+                    ? "bg-white/[0.06] text-rose-200 hover:bg-white/10 md:w-full"
+                    : `text-slate-300 hover:bg-white/10 hover:text-white ${index > 2 ? "hidden md:flex" : "md:w-full"
+                    }`
+                }`}
+            >
+              <Icon name={item.icon} className="h-4 w-4 shrink-0" />
+              <span>{item.label}</span>
+            </Link>
+          ))}
         </nav>
 
-        <div className="mt-auto hidden px-3 pb-4 lg:block">
-          <div className="rounded-lg border border-white/10 bg-white/[0.06] p-3">
-            <div className="flex items-center gap-2 text-[10px] font-semibold text-[#d6e5ec]">
-              <Icon name="shield" className="h-4 w-4 text-[#8de1d6]" /> Data laporan bersifat sensitif
+        <div className="mt-auto hidden px-3 pb-5 md:block">
+          <div className="rounded-xl border border-white/10 bg-white/[0.06] p-3">
+            <div className="flex items-center gap-2 text-[11px] font-semibold">
+              <Icon name="shield" className="h-4 w-4 text-[#80ddd2]" /> Data laporan bersifat sensitif
             </div>
-            <p className="mt-1.5 text-[9px] leading-4 text-[#a9bbca]">
+            <p className="mt-2 text-[10px] leading-4 text-slate-300">
               Pastikan informasi yang diberikan relevan dan benar.
             </p>
           </div>
-          <p className="pt-4 text-center text-[9px] text-[#8ea4b4]">SAFE SPACE · Portal Pelapor</p>
+          <p className="mt-4 text-center text-[9px] text-slate-500">SAFE SPACE · Portal Pelapor</p>
         </div>
       </aside>
 
       <div className="min-w-0 flex-1">
-        <header className="flex h-[60px] items-center justify-between border-b border-[#e1e7ed] bg-white px-5 sm:px-8">
+        <header className="flex h-[60px] items-center justify-between border-b border-[#e5ebf1] bg-white px-5 sm:px-8">
           <div>
-            <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[#078779]">
-              Safe Space <span className="px-1 text-[#a8b5c1]">›</span> Buat Laporan
+            <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#0d8277]">
+              Portal Pelapor
             </p>
-            <h1 className="mt-0.5 text-sm font-bold text-[#20384e]">Buat Laporan</h1>
+            <h1 className="mt-0.5 text-sm font-bold">Buat Laporan</h1>
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
-            <button type="button" title="Notifikasi" className="relative grid h-9 w-9 place-items-center rounded-lg text-[#65788a] hover:bg-[#f1f5f7]">
-              <Icon name="bell" />
-              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#d16c62]" />
+            <button
+              type="button"
+              aria-label="Notifikasi"
+              className="relative rounded-full p-2 text-slate-500 hover:bg-slate-50"
+            >
+              <Icon name="bell" className="h-[18px] w-[18px]" />
+              <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-rose-500" />
             </button>
-            <span className="h-7 w-px bg-[#e5eaef]" />
-            <div className="flex items-center gap-2.5">
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#e4f3f0] text-[10px] font-bold text-[#087e73]">{initials}</span>
-              <div className="hidden sm:block">
-                <p className="max-w-[150px] truncate text-[11px] font-semibold text-[#243d52]">{reporterName}</p>
-                <p className="text-[9px] text-[#8190a0]">{reporterType}</p>
+            <span className="h-6 border-l border-slate-200" />
+            <details className="group relative">
+              <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg p-1.5 hover:bg-slate-50 [&::-webkit-details-marker]:hidden">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6f4f2] text-[10px] font-bold text-[#0d8277]">
+                  {initials}
+                </span>
+                <span className="hidden text-left sm:block">
+                  <span className="block max-w-[150px] truncate text-[11px] font-semibold">
+                    {reporterName}
+                  </span>
+                  <span className="block text-[9px] text-slate-400">Pelapor</span>
+                </span>
+                <Icon
+                  name="chevron"
+                  className="h-3.5 w-3.5 rotate-90 text-slate-400 transition-transform group-open:-rotate-90"
+                />
+              </summary>
+              <div className="absolute right-0 top-full z-20 mt-2 w-48 rounded-lg border border-[#e1e8ef] bg-white p-1.5 shadow-lg">
+                <div className="border-b border-slate-100 px-3 py-2 sm:hidden">
+                  <p className="truncate text-[11px] font-semibold">{reporterName}</p>
+                  <p className="text-[9px] text-slate-400">{reporterType}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void signOut({ callbackUrl: "/login" })}
+                  className="flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-left text-xs font-medium text-rose-600 hover:bg-rose-50"
+                >
+                  <Icon name="arrow" className="h-4 w-4 rotate-180" />
+                  Logout
+                </button>
               </div>
-            </div>
+            </details>
           </div>
         </header>
 
-        <form ref={formRef} onSubmit={handleSubmit} className="mx-auto flex min-h-[calc(100vh-60px)] w-full max-w-[1320px] flex-col px-4 pb-24 sm:px-7 lg:px-9">
+        <form ref={formRef} onSubmit={handleSubmit} className="mx-auto flex min-h-[calc(100vh-60px)] w-full max-w-[1500px] flex-col px-4 pb-24 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-end justify-between gap-3 pb-4 pt-5 sm:pt-6">
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#078779]">Pelaporan Kasus</p>
-              <h2 className="mt-1 text-[22px] font-bold leading-tight text-[#20384e]">Buat Laporan</h2>
-              <p className="mt-1.5 text-xs text-[#718092]">Gunakan formulir ini untuk menyampaikan kejadian kepada Satgas PPKS secara aman dan terarah.</p>
+              <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#0d8277]">Pelaporan Kasus</p>
+              <h2 className="mt-1 text-[22px] font-bold leading-tight text-[#193652]">Buat Laporan</h2>
+              <p className="mt-1.5 text-xs text-slate-500">Gunakan formulir ini untuk menyampaikan kejadian kepada Satgas PPKS secara aman dan terarah.</p>
             </div>
-            <Link href="/" className="mb-0.5 inline-flex items-center gap-1 text-[11px] font-semibold text-[#087f73] hover:text-[#075e57]">
+            <Link href="/" className="mb-0.5 inline-flex items-center gap-1 text-[11px] font-semibold text-[#0d8277] hover:text-[#075e57]">
               <span className="rotate-180"><Icon name="arrow" className="h-3.5 w-3.5" /></span>
               Kembali ke Dashboard
             </Link>
@@ -383,14 +425,14 @@ export default function ReportForm({
           )}
 
           {caseId ? (
-            <section className="my-6 rounded-lg border border-[#b8e3d8] bg-white p-6 shadow-[0_3px_14px_rgba(27,54,76,0.05)] sm:p-9" role="status">
-              <span className="grid h-12 w-12 place-items-center rounded-full bg-[#e3f5ef] text-[#078779]"><Icon name="check" className="h-6 w-6" /></span>
-              <p className="mt-5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#078779]">Laporan Terkirim</p>
-              <h2 className="mt-1 text-2xl font-bold text-[#20384e]">Terima kasih telah melapor.</h2>
-              <p className="mt-2 max-w-xl text-sm leading-6 text-[#718092]">Laporanmu sudah diterima oleh Satgas PPKS. Simpan Case ID berikut untuk referensi.</p>
-              <div className="mt-6 inline-flex min-h-12 items-center rounded-md border border-[#dce6ec] bg-[#f7fafb] px-4 font-mono text-sm font-semibold text-[#20384e]">{caseId}</div>
+            <section className="my-6 rounded-xl border border-[#b8e3d8] bg-white p-6 shadow-[0_2px_8px_rgba(25,54,82,0.04)] sm:p-9" role="status">
+              <span className="grid h-12 w-12 place-items-center rounded-full bg-[#e3f5ef] text-[#0d8277]"><Icon name="check" className="h-6 w-6" /></span>
+              <p className="mt-5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#0d8277]">Laporan Terkirim</p>
+              <h2 className="mt-1 text-2xl font-bold text-[#193652]">Terima kasih telah melapor.</h2>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">Laporanmu sudah diterima oleh Satgas PPKS. Simpan Case ID berikut untuk referensi.</p>
+              <div className="mt-6 inline-flex min-h-12 items-center rounded-md border border-[#e4eaf0] bg-[#f7fafb] px-4 font-mono text-sm font-semibold text-[#193652]">{caseId}</div>
               <div className="mt-7">
-                <button type="button" onClick={startAnotherReport} className="inline-flex h-10 items-center gap-2 rounded-md bg-[#087f73] px-4 text-xs font-semibold text-white hover:bg-[#076b62]">
+                <button type="button" onClick={startAnotherReport} className="inline-flex h-10 items-center gap-2 rounded-md bg-[#0d8277] px-4 text-xs font-semibold text-white hover:bg-[#076b62]">
                   Buat laporan lain <Icon name="arrow" className="h-3.5 w-3.5" />
                 </button>
               </div>
@@ -412,7 +454,7 @@ export default function ReportForm({
               )}
 
               <div className="grid flex-1 items-start gap-4 pb-24 lg:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.86fr)]">
-                <section className="rounded-lg border border-[#dfe6ec] bg-white p-4 shadow-[0_2px_10px_rgba(28,52,75,0.045)] sm:p-5">
+                <section className="rounded-xl border border-[#e4eaf0] bg-white p-4 shadow-[0_2px_8px_rgba(25,54,82,0.04)] sm:p-5">
                   <CardHeading step="1" title="Informasi Kejadian" subtitle="Lengkapi informasi utama mengenai kejadian yang ingin dilaporkan." icon="file" />
 
                   <div className="space-y-4">
@@ -437,15 +479,13 @@ export default function ReportForm({
                       <div>
                         <FieldLabel htmlFor="tanggalKejadian" required>Tanggal kejadian</FieldLabel>
                         <div className="relative">
-                          <input id="tanggalKejadian" name="tanggalKejadian" type="date" required className="form-control pr-9" />
-                          <Icon name="calendar" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8190a0]" />
+                          <input id="tanggalKejadian" name="tanggalKejadian" type="date" required className="form-control" />
                         </div>
                       </div>
                       <div>
                         <FieldLabel htmlFor="waktuKejadian" required>Waktu kejadian</FieldLabel>
                         <div className="relative">
-                          <input id="waktuKejadian" name="waktuKejadian" type="time" required className="form-control pr-9" />
-                          <Icon name="clock" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8190a0]" />
+                          <input id="waktuKejadian" name="waktuKejadian" type="time" required className="form-control" />
                         </div>
                         {fieldErrors.waktuKejadian && <p className="field-error">{fieldErrors.waktuKejadian}</p>}
                       </div>
@@ -468,11 +508,11 @@ export default function ReportForm({
                     <div>
                       <div className="mb-1.5 flex items-center justify-between gap-3">
                         <FieldLabel htmlFor="party-0-nama" required>Pihak yang terlibat</FieldLabel>
-                        <button type="button" onClick={() => setParties((current) => [...current, { nama: "", peran: "SAKSI" }])} disabled={parties.length >= 20} className="inline-flex h-7 shrink-0 items-center gap-1 rounded-md border border-[#dce7e9] px-2.5 text-[10px] font-semibold text-[#087f73] hover:bg-[#f1f8f6] disabled:opacity-40">
+                        <button type="button" onClick={() => setParties((current) => [...current, { nama: "", peran: "SAKSI" }])} disabled={parties.length >= 20} className="inline-flex h-7 shrink-0 items-center gap-1 rounded-md border border-[#dce7e9] px-2.5 text-[10px] font-semibold text-[#0d8277] hover:bg-[#f1f8f6] disabled:opacity-40">
                           <Icon name="plus" className="h-3 w-3" /> Tambah pihak
                         </button>
                       </div>
-                      <p className="mb-2 text-[10px] text-[#8190a0]">Isi pihak yang relevan. Nama dapat disamarkan pada laporan anonim.</p>
+                      <p className="mb-2 text-[10px] text-slate-500">Isi pihak yang relevan. Nama dapat disamarkan pada laporan anonim.</p>
                       <div className="space-y-2">
                         {parties.map((party, index) => (
                           <div key={index} className="grid grid-cols-[minmax(0,1fr)_112px_32px] gap-2">
@@ -500,12 +540,12 @@ export default function ReportForm({
                 </section>
 
                 <div className="space-y-4">
-                  <section className="rounded-lg border border-[#dfe6ec] bg-white p-4 shadow-[0_2px_10px_rgba(28,52,75,0.045)] sm:p-5">
+                  <section className="rounded-xl border border-[#e4eaf0] bg-white p-4 shadow-[0_2px_8px_rgba(25,54,82,0.04)] sm:p-5">
                     <CardHeading step="2" title="Bukti Pendukung" subtitle="Lampirkan bukti yang relevan bila tersedia." icon="upload" />
                     <input ref={fileInputRef} type="file" multiple accept={ACCEPTED_TYPES.join(",")} onChange={handleFileChange} className="sr-only" aria-label="Pilih file bukti" />
-                    <button type="button" onClick={() => fileInputRef.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); void addFiles(event.dataTransfer.files); }} className={`flex min-h-[134px] w-full flex-col items-center justify-center rounded-lg border border-dashed px-4 py-5 text-center transition-colors ${dragging ? "border-[#078779] bg-[#edf8f5]" : "border-[#cfdbe4] bg-[#fbfcfd] hover:border-[#75b9ad] hover:bg-[#f8fcfb]"}`}>
-                      <span className="grid h-9 w-9 place-items-center rounded-lg bg-[#e7f5f2] text-[#078779]"><Icon name="upload" className="h-[18px] w-[18px]" /></span>
-                      <span className="mt-2.5 text-[11px] font-semibold text-[#30495e]">Pilih file atau seret bukti ke sini</span>
+                    <button type="button" onClick={() => fileInputRef.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); void addFiles(event.dataTransfer.files); }} className={`flex min-h-[134px] w-full flex-col items-center justify-center rounded-lg border border-dashed px-4 py-5 text-center transition-colors ${dragging ? "border-[#0d8277] bg-[#edf8f5]" : "border-[#cfdbe4] bg-[#fbfcfd] hover:border-[#75b9ad] hover:bg-[#f8fcfb]"}`}>
+                      <span className="grid h-9 w-9 place-items-center rounded-lg bg-[#e7f5f2] text-[#0d8277]"><Icon name="upload" className="h-[18px] w-[18px]" /></span>
+                      <span className="mt-2.5 text-[11px] font-semibold text-[#193652]">Pilih file atau seret bukti ke sini</span>
                       <span className="mt-1 text-[9px] leading-4 text-[#8492a0]">{ACCEPTED_FORMATS}<br />Maks. 5 file, 20 MB per file</span>
                     </button>
                     <p className="mt-3 rounded-md bg-[#f4f7f9] px-3 py-2 text-[9px] leading-4 text-[#82909d]">Lampiran hanya dapat diakses oleh pelapor dan petugas Satgas PPKS yang berwenang.</p>
@@ -516,7 +556,7 @@ export default function ReportForm({
                           <li key={item.id} className="flex min-w-0 items-center gap-2.5 rounded-md border border-[#e3e9ee] p-2">
                             {item.preview ? <img src={item.preview} alt={`Pratinjau ${item.file.name}`} className="h-10 w-10 shrink-0 rounded object-cover" /> : <span className="grid h-10 w-10 shrink-0 place-items-center rounded bg-[#eff4f6] text-[#5b788b]"><Icon name="file" /></span>}
                             <span className="min-w-0 flex-1">
-                              <span className="block truncate text-[10px] font-semibold text-[#30495e]">{item.file.name}</span>
+                              <span className="block truncate text-[10px] font-semibold text-[#193652]">{item.file.name}</span>
                               <span className="mt-0.5 block text-[9px] text-[#8b98a4]">{formatBytes(item.file.size)}</span>
                             </span>
                             <button type="button" title={`Hapus ${item.file.name}`} onClick={() => removeAttachment(item.id)} className="grid h-8 w-8 shrink-0 place-items-center rounded text-[#8997a4] hover:bg-[#fff1ef] hover:text-[#bb5b50]">
@@ -528,36 +568,36 @@ export default function ReportForm({
                     )}
                   </section>
 
-                  <section className="rounded-lg border border-[#dfe6ec] bg-white p-4 shadow-[0_2px_10px_rgba(28,52,75,0.045)] sm:p-5">
+                  <section className="rounded-xl border border-[#e4eaf0] bg-white p-4 shadow-[0_2px_8px_rgba(25,54,82,0.04)] sm:p-5">
                     <CardHeading step="3" title="Identitas Pelapor" subtitle="Pilih visibilitas identitas pada laporan." icon="user" />
                     <fieldset className="space-y-2">
                       <legend className="sr-only">Pengaturan identitas</legend>
-                      <label className={`flex cursor-pointer gap-3 rounded-md border p-3 transition-colors ${!isAnonymous ? "border-[#9ed2c9] bg-[#eef8f6]" : "border-[#e4e9ed] hover:bg-[#fafcfc]"}`}>
-                        <input type="radio" name="privasi" checked={!isAnonymous} onChange={() => setIsAnonymous(false)} className="mt-0.5 accent-[#087f73]" />
-                        <span><span className="block text-[10px] font-semibold text-[#30495e]">Tampilkan identitas</span><span className="mt-1 block text-[9px] leading-4 text-[#85929e]">Identitas akan diketahui untuk komunikasi penanganan.</span></span>
+                      <label className={`flex cursor-pointer gap-3 rounded-md border p-3 transition-colors ${!isAnonymous ? "border-[#9ed2c9] bg-[#eef8f6]" : "border-[#e4eaf0] hover:bg-[#fafcfc]"}`}>
+                        <input type="radio" name="privasi" checked={!isAnonymous} onChange={() => setIsAnonymous(false)} className="mt-0.5 accent-[#0d8277]" />
+                        <span><span className="block text-[10px] font-semibold text-[#193652]">Tampilkan identitas</span><span className="mt-1 block text-[9px] leading-4 text-slate-500">Identitas akan diketahui untuk komunikasi penanganan.</span></span>
                       </label>
-                      <label className={`flex cursor-pointer gap-3 rounded-md border p-3 transition-colors ${isAnonymous ? "border-[#9ed2c9] bg-[#eef8f6]" : "border-[#e4e9ed] hover:bg-[#fafcfc]"}`}>
-                        <input type="radio" name="privasi" checked={isAnonymous} onChange={() => setIsAnonymous(true)} className="mt-0.5 accent-[#087f73]" />
-                        <span><span className="block text-[10px] font-semibold text-[#30495e]">Laporkan secara anonim</span><span className="mt-1 block text-[9px] leading-4 text-[#85929e]">Identitas tidak ditampilkan pada informasi laporan.</span></span>
+                      <label className={`flex cursor-pointer gap-3 rounded-md border p-3 transition-colors ${isAnonymous ? "border-[#9ed2c9] bg-[#eef8f6]" : "border-[#e4eaf0] hover:bg-[#fafcfc]"}`}>
+                        <input type="radio" name="privasi" checked={isAnonymous} onChange={() => setIsAnonymous(true)} className="mt-0.5 accent-[#0d8277]" />
+                        <span><span className="block text-[10px] font-semibold text-[#193652]">Laporkan secara anonim</span><span className="mt-1 block text-[9px] leading-4 text-slate-500">Identitas tidak ditampilkan pada informasi laporan.</span></span>
                       </label>
                     </fieldset>
                     <div className="mt-3 flex gap-2 rounded-md bg-[#f7f9fa] p-3">
-                      <span className="mt-0.5 text-[#078779]"><Icon name="shield" className="h-3.5 w-3.5" /></span>
+                      <span className="mt-0.5 text-[#0d8277]"><Icon name="shield" className="h-3.5 w-3.5" /></span>
                       <p className="text-[9px] leading-4 text-[#758493]"><span className="font-semibold text-[#53697d]">Privasi informasi terjaga</span><br />{isAnonymous ? "Identitas akun tetap terlindungi dari tampilan laporan." : "Informasi identitas hanya digunakan untuk keperluan penanganan."}</p>
                     </div>
                   </section>
                 </div>
               </div>
 
-              <footer className="fixed inset-x-0 bottom-0 z-20 border-t border-[#dfe6ec] bg-white/95 px-4 py-3 backdrop-blur sm:px-7 lg:left-[224px] lg:px-9">
-                <div className="mx-auto flex max-w-[1320px] flex-wrap items-center justify-between gap-3">
-                  <p className="hidden items-center gap-2 text-[10px] leading-4 text-[#7b8996] sm:flex">
-                    <Icon name="shield" className="h-4 w-4 shrink-0 text-[#078779]" />
+              <footer className="fixed inset-x-0 bottom-0 z-20 border-t border-[#e4eaf0] bg-white/95 px-4 py-3 backdrop-blur sm:px-6 md:left-60 lg:px-8">
+                <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-3">
+                  <p className="hidden items-center gap-2 text-[10px] leading-4 text-slate-500 sm:flex">
+                    <Icon name="shield" className="h-4 w-4 shrink-0 text-[#0d8277]" />
                     Periksa kembali informasi sebelum mengirim. Data laporan bersifat rahasia.
                   </p>
                   <div className="ml-auto flex w-full gap-2 sm:w-auto">
-                    <Link href="/" className="inline-flex h-10 flex-1 items-center justify-center rounded-md border border-[#dce4ea] px-4 text-xs font-semibold text-[#536779] hover:bg-[#f6f8f9] sm:flex-none">Batalkan</Link>
-                    <button type="submit" disabled={preview || submitting || !categories.length || !locations.length} className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-[#078779] px-4 text-xs font-semibold text-white hover:bg-[#076b62] disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none">
+                    <Link href="/" className="inline-flex h-10 flex-1 items-center justify-center rounded-md border border-[#e4eaf0] px-4 text-xs font-semibold text-slate-500 hover:bg-[#f6f8f9] sm:flex-none">Batalkan</Link>
+                    <button type="submit" disabled={preview || submitting || !categories.length || !locations.length} className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-[#0d8277] px-4 text-xs font-semibold text-white hover:bg-[#076b62] disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none">
                       <Icon name="send" className="h-3.5 w-3.5" /> {preview ? "Mode Pratinjau" : submitting ? "Mengirim..." : "Kirim Laporan"}
                     </button>
                   </div>

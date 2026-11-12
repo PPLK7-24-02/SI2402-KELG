@@ -15,8 +15,9 @@ export default async function BuatLaporanPage() {
 
   const [kategori, lokasi] = await Promise.all([
     prisma.kategoriKasus.findMany({
+      where: { idKategori: { in: ["kat-01", "kat-02", "kat-03", "kat-04", "kat-05"] } },
       select: { idKategori: true, nama: true },
-      orderBy: { nama: "asc" },
+      orderBy: { idKategori: "asc" },
     }),
     prisma.lokasi.findMany({
       select: { idLokasi: true, namaGedung: true, area: true },

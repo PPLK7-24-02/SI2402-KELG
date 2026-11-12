@@ -72,7 +72,7 @@ export async function GET() {
         where: {
           pelaporId: idPelapor,
           status: {
-            in: ["REVIEW", "DIVERIFIKASI", "DITANGANI"],
+            in: ["DIVERIFIKASI", "DITANGANI"],
           },
         },
       }),

@@ -136,7 +136,7 @@ export async function GET() {
       {
         label: "Emergency Report",
         deskripsi: "Laporkan kondisi darurat.",
-        path: "/emergency-report",
+        path: "/pelapor/emergency-report",
       },
       {
         label: "Lihat Status Laporan",

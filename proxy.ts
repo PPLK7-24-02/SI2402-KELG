@@ -3,6 +3,10 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  // This API owns its session/role checks and must return JSON, not redirects.
+  if (pathname === "/pelapor/emergency-report/api/create") {
+    return NextResponse.next();
+  }
   const isPelaporRoute =
     pathname === "/pelapor" || pathname.startsWith("/pelapor/");
   const isSatgasRoute =

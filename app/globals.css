@@ -25,6 +25,12 @@ body {
   font-family: var(--font-geist-sans), sans-serif;
 }
 
+@media (max-width: 1023px) {
+  body:has([data-pelapor-dashboard]) nextjs-portal {
+    display: none !important;
+  }
+}
+
 @layer components {
   .form-control {
     @apply h-10 w-full rounded-md border border-[#dce4ea] bg-white px-3 text-xs text-[#34495c] outline-none transition-colors placeholder:text-[#9aa6b2] focus:border-[#55a89b] focus:ring-2 focus:ring-[#078779]/10;

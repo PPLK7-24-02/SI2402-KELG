@@ -14,6 +14,7 @@ import {
   Search,
   ShieldCheck,
 } from "./icons";
+import SidebarPelapor from "./SidebarPelapor";
 
 type DashboardData = {
   pelapor: {
@@ -33,7 +34,7 @@ type DashboardData = {
     createdAt: string;
     kategoriId: string;
     kategori: {
-    nama: string;
+      nama: string;
     };
   }[];
   notifikasi: {
@@ -98,7 +99,7 @@ function redirectToLogin(
   loginUrl.searchParams.set(
     "callbackUrl",
     callbackUrl ||
-      `${window.location.pathname}${window.location.search}${window.location.hash}`
+    `${window.location.pathname}${window.location.search}${window.location.hash}`
   );
   navigate(`${loginUrl.pathname}${loginUrl.search}`);
 }
@@ -106,7 +107,8 @@ function redirectToLogin(
 function getErrorMessage(error: unknown) {
   return error instanceof Error
     ? error.message
-    : "Terjadi kesalahan saat memuat dashboard.";}
+    : "Terjadi kesalahan saat memuat dashboard.";
+}
 
 type IconName =
   | "home"
@@ -263,7 +265,7 @@ function getInitials(name: string) {
 const NAV_ITEMS = [
   { href: "/pelapor", label: "Dashboard", icon: LayoutDashboard },
   { href: "/pelapor/buat-laporan", label: "Buat Laporan", icon: FileText },
-  { href: "/case-tracking", label: "Lihat Status Laporan", icon: Search},
+  { href: "/pelapor/case-tracking", label: "Lihat Status Laporan", icon: Search },
   { href: "/edukasi", label: "Edukasi", icon: BookOpen },
 ];
 
@@ -345,35 +347,35 @@ export default function DashboardPengguna() {
   );
   const metrics = dashboard
     ? [
-        {
-          label: "Total Laporan Saya",
-          value: dashboard.ringkasanLaporan.totalLaporan,
-          caption: "Seluruh laporan pribadi",
-          icon: "file" as const,
-          color: "teal",
-        },
-        {
-          label: "Laporan Dikirim",
-          value: dashboard.ringkasanLaporan.laporanDikirim,
-          caption: "Menunggu penanganan",
-          icon: "send" as const,
-          color: "blue",
-        },
-        {
-          label: "Laporan Dalam Proses",
-          value: dashboard.ringkasanLaporan.laporanDalamProses,
-          caption: "Memerlukan pemantauan",
-          icon: "clock" as const,
-          color: "amber",
-        },
-        {
-          label: "Laporan Selesai",
-          value: dashboard.ringkasanLaporan.laporanSelesai,
-          caption: "Penanganan selesai",
-          icon: "check" as const,
-          color: "green",
-        },
-      ]
+      {
+        label: "Total Laporan Saya",
+        value: dashboard.ringkasanLaporan.totalLaporan,
+        caption: "Seluruh laporan pribadi",
+        icon: "file" as const,
+        color: "teal",
+      },
+      {
+        label: "Laporan Dikirim",
+        value: dashboard.ringkasanLaporan.laporanDikirim,
+        caption: "Menunggu penanganan",
+        icon: "send" as const,
+        color: "blue",
+      },
+      {
+        label: "Laporan Dalam Proses",
+        value: dashboard.ringkasanLaporan.laporanDalamProses,
+        caption: "Memerlukan pemantauan",
+        icon: "clock" as const,
+        color: "amber",
+      },
+      {
+        label: "Laporan Selesai",
+        value: dashboard.ringkasanLaporan.laporanSelesai,
+        caption: "Penanganan selesai",
+        icon: "check" as const,
+        color: "green",
+      },
+    ]
     : [];
 
   return (
@@ -381,68 +383,13 @@ export default function DashboardPengguna() {
       data-pelapor-dashboard
       className="flex min-h-screen overflow-x-hidden bg-[#f3f6fa] text-[#193652]"
     >
-      <aside
-        id="pelapor-sidebar"
-        className="hidden w-64 shrink-0 flex-col bg-[#0f2133] text-white lg:relative lg:inset-auto lg:z-auto lg:flex"
-      >
-        <div className="flex items-center gap-3 border-b border-white/10 px-5 py-5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#107b73] text-white">
-            <ShieldCheck className="h-5 w-5" />
-          </span>
-          <div>
-            <p className="text-[13px] font-black tracking-wider">SAFE SPACE</p>
-            <p className="text-[10px] text-white/50">Portal Pelapor</p>
-          </div>
-        </div>
-
-        <nav
-          className="flex-1 overflow-y-auto px-3 py-4"
-          aria-label="Navigasi Pelapor"
-        >
-          <p className="mb-2 px-2 text-[10px] font-bold tracking-[0.12em] text-white/40">
-            MENU UTAMA
-          </p>
-          <ul className="space-y-0.5">
-            {NAV_ITEMS.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/pelapor" &&
-                  pathname.startsWith(`${item.href}/`));
-
-              return (
-                <li key={`${item.href}-${item.label}`}>
-                  <Link
-                    href={item.href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
-                      isActive
-                        ? "bg-[#107b73] text-white shadow-lg shadow-[#107b73]/30"
-                        : "text-white/60 hover:bg-white/8 hover:text-white"
-                    }`}>
-                    <item.icon className="h-[18px] w-[18px] shrink-0" />
-                    <span className="flex-1">{item.label}</span>
-                    {isActive && (
-                      <ChevronRight className="h-3.5 w-3.5 opacity-60" />
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-
-        <div className="border-t border-white/10 px-4 py-4">
-          <div className="flex items-start gap-3 rounded-xl bg-white/[0.06] p-3">
-            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#80ddd2]" />
-            <div>
-              <p className="text-[11px] font-semibold">Privasi Anda dijaga</p>
-              <p className="mt-1 text-[10px] leading-4 text-white/50">
-                Hanya informasi yang dapat Anda akses yang ditampilkan.
-              </p>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <SidebarPelapor
+        emergencyReport={
+          emergencyReport
+            ? { path: emergencyReport.path }
+            : undefined
+        }
+      />
 
       <div className="min-w-0 flex-1">
         <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-[#e5ebf1] bg-white px-4 py-3 sm:gap-4 sm:px-8">
@@ -488,7 +435,7 @@ export default function DashboardPengguna() {
                 </span>
                 <Icon
                   name="chevron"
-                  className="h-3.5 w-3.5 rotate-90 text-slate-400 transition-transform group-open:-rotate-90"/>
+                  className="h-3.5 w-3.5 rotate-90 text-slate-400 transition-transform group-open:-rotate-90" />
               </summary>
               <div className="absolute right-0 top-full z-20 mt-2 w-48 rounded-lg border border-[#e1e8ef] bg-white p-1.5 shadow-lg">
                 <div className="border-b border-slate-100 px-3 py-2 sm:hidden">
@@ -526,7 +473,7 @@ export default function DashboardPengguna() {
           <div className="mb-5 flex items-start gap-2 rounded-lg border border-[#d9efeb] bg-[#e9f6f4] px-3 py-2.5 text-[10px] leading-4 text-[#527b79]">
             <Icon
               name="shield"
-              className="mt-0.5 h-4 w-4 shrink-0 text-[#14877d]"/>
+              className="mt-0.5 h-4 w-4 shrink-0 text-[#14877d]" />
             <p>
               Halaman ini hanya menampilkan informasi laporan yang dapat Anda
               akses. Catatan internal, bukti CCTV, dan identitas pihak lain
@@ -552,42 +499,41 @@ export default function DashboardPengguna() {
             aria-label="Ringkasan laporan"
             className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {isLoading
-               ? [0, 1, 2, 3].map((item) => (
-                  <div
-                    key={item}
-                    className="h-[102px] animate-pulse rounded-xl border border-[#e4eaf0] bg-white"/>
-                ))
+              ? [0, 1, 2, 3].map((item) => (
+                <div
+                  key={item}
+                  className="h-[102px] animate-pulse rounded-xl border border-[#e4eaf0] bg-white" />
+              ))
               : metrics.map((metric) => (
-                  <article
-                    key={metric.label}
-                    className="rounded-xl border border-[#e4eaf0] bg-white p-4 shadow-[0_2px_8px_rgba(25,54,82,0.04)]">
-                    <div className="flex items-start gap-3">
-                      <span
-                        className={`rounded-lg p-2 ${
-                          metric.color === "teal"
+                <article
+                  key={metric.label}
+                  className="rounded-xl border border-[#e4eaf0] bg-white p-4 shadow-[0_2px_8px_rgba(25,54,82,0.04)]">
+                  <div className="flex items-start gap-3">
+                    <span
+                      className={`rounded-lg p-2 ${metric.color === "teal"
                           ? "bg-[#e7f5f3] text-[#13877d]"
                           : metric.color === "blue"
-                          ? "bg-blue-50 text-blue-600"
-                          : metric.color === "amber"
-                          ? "bg-amber-50 text-amber-600"
-                          : "bg-emerald-50 text-emerald-600"
+                            ? "bg-blue-50 text-blue-600"
+                            : metric.color === "amber"
+                              ? "bg-amber-50 text-amber-600"
+                              : "bg-emerald-50 text-emerald-600"
                         }`}>
-                        <Icon name={metric.icon} className="h-4 w-4" />
-                      </span>
-                      <div>
-                        <p className="text-[10px] text-slate-500">
-                          {metric.label}
-                        </p>
-                        <p className="mt-0.5 text-[22px] font-bold leading-6">
-                          {metric.value}
-                        </p>
-                        <p className="mt-1.5 text-[9px] text-slate-400">
-                          {metric.caption}
-                        </p>
-                      </div>
+                      <Icon name={metric.icon} className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <p className="text-[10px] text-slate-500">
+                        {metric.label}
+                      </p>
+                      <p className="mt-0.5 text-[22px] font-bold leading-6">
+                        {metric.value}
+                      </p>
+                      <p className="mt-1.5 text-[9px] text-slate-400">
+                        {metric.caption}
+                      </p>
                     </div>
-                  </article>
-                ))}
+                  </div>
+                </article>
+              ))}
           </section>
 
           <section aria-labelledby="akses-cepat-title" className="mb-6">
@@ -616,20 +562,17 @@ export default function DashboardPengguna() {
                   <Link
                     key={item.path}
                     href={item.path}
-                    className={`group ${
-                      isEmergencyReport ? "hidden lg:flex" : "flex"
-                    } min-h-[86px] items-start gap-3 rounded-xl border bg-white p-3.5 shadow-[0_2px_8px_rgba(25,54,82,0.04)] transition hover:-translate-y-0.5 hover:shadow-md ${
-                      index === 1 ? "border-rose-100" : "border-[#e4eaf0]"
-                    }`}>
+                    className={`group ${isEmergencyReport ? "hidden lg:flex" : "flex"
+                      } min-h-[86px] items-start gap-3 rounded-xl border bg-white p-3.5 shadow-[0_2px_8px_rgba(25,54,82,0.04)] transition hover:-translate-y-0.5 hover:shadow-md ${index === 1 ? "border-rose-100" : "border-[#e4eaf0]"
+                      }`}>
                     <span
                       className={`rounded-lg p-2 ${colorStyles[index] ?? colorStyles[0]}`}>
                       <Icon name={icon[index] ?? "file"} className="h-4 w-4" />
                     </span>
                     <span className="min-w-0 flex-1">
                       <span
-                        className={`block text-[10px] font-bold ${
-                          index === 1 ? "text-rose-600" : "text-[#193652]"
-                        }`}>
+                        className={`block text-[10px] font-bold ${index === 1 ? "text-rose-600" : "text-[#193652]"
+                          }`}>
                         {item.label}
                       </span>
                       <span className="mt-1 block text-[9px] leading-4 text-slate-500">
@@ -638,7 +581,7 @@ export default function DashboardPengguna() {
                     </span>
                     <Icon
                       name="chevron"
-                      className="mt-1 h-4 w-4 shrink-0 text-slate-400 transition group-hover:translate-x-0.5"/>
+                      className="mt-1 h-4 w-4 shrink-0 text-slate-400 transition group-hover:translate-x-0.5" />
                   </Link>
                 );
               })}
@@ -662,7 +605,7 @@ export default function DashboardPengguna() {
                   href={
                     quickAccess.find(
                       (item) => item.label === "Lihat Status Laporan"
-                    )?.path ?? "/case-tracking"
+                    )?.path ?? "/pelapor/case-tracking"
                   }
                   className="flex items-center gap-1 text-[9px] font-semibold text-[#0d8277] hover:underline">
                   Lihat Semua
@@ -675,7 +618,7 @@ export default function DashboardPengguna() {
                   {[0, 1, 2].map((item) => (
                     <div
                       key={item}
-                      className="h-8 animate-pulse rounded bg-slate-100"/>
+                      className="h-8 animate-pulse rounded bg-slate-100" />
                   ))}
                 </div>
               ) : dashboard?.laporanTerbaru.length ? (
@@ -707,10 +650,9 @@ export default function DashboardPengguna() {
                             </td>
                             <td className="px-4 py-3">
                               <span
-                                className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[8px] font-semibold ${
-                                  statusStyles[report.status] ??
+                                className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[8px] font-semibold ${statusStyles[report.status] ??
                                   "bg-slate-100 text-slate-600"
-                                }`}>
+                                  }`}>
                                 {report.status === "SELESAI" ? (
                                   <Icon name="check" className="h-3 w-3" />
                                 ) : (
@@ -725,7 +667,7 @@ export default function DashboardPengguna() {
                                   quickAccess.find(
                                     (item) =>
                                       item.label === "Lihat Status Laporan"
-                                  )?.path ?? "/case-tracking"
+                                  )?.path ?? "/pelapor/case-tracking"
                                 }
                                 className="font-semibold text-[#0d8277] hover:underline">
                                 Lihat Status
@@ -782,7 +724,7 @@ export default function DashboardPengguna() {
                   {[0, 1, 2].map((item) => (
                     <div
                       key={item}
-                      className="h-12 animate-pulse rounded bg-slate-100"/>
+                      className="h-12 animate-pulse rounded bg-slate-100" />
                   ))}
                 </div>
               ) : dashboard?.notifikasi.daftar.length ? (
@@ -796,19 +738,17 @@ export default function DashboardPengguna() {
                               item.label === "Lihat Status Laporan"
                           )?.path ?? "/case-tracking"
                         }
-                        className={`flex gap-3 border-l-2 px-3 py-3 transition hover:bg-slate-50 ${
-                          notification.isRead
+                        className={`flex gap-3 border-l-2 px-3 py-3 transition hover:bg-slate-50 ${notification.isRead
                             ? "border-transparent"
                             : "border-[#0d8277]"
-                        }`}>
+                          }`}>
                         <span
-                          className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${
-                            index % 3 === 0
+                          className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${index % 3 === 0
                               ? "bg-[#e8f5f3] text-[#13877d]"
                               : index % 3 === 1
                                 ? "bg-amber-50 text-amber-600"
                                 : "bg-emerald-50 text-emerald-600"
-                          }`}>
+                            }`}>
                           <Icon
                             name={
                               index % 3 === 1
@@ -817,7 +757,7 @@ export default function DashboardPengguna() {
                                   ? "check"
                                   : "bell"
                             }
-                            className="h-3.5 w-3.5"/>
+                            className="h-3.5 w-3.5" />
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="flex items-start justify-between gap-2">
@@ -826,7 +766,7 @@ export default function DashboardPengguna() {
                             </span>
                             <Icon
                               name="chevron"
-                              className="h-3.5 w-3.5 shrink-0 text-slate-400"/>
+                              className="h-3.5 w-3.5 shrink-0 text-slate-400" />
                           </span>
                           <span className="mt-1 line-clamp-2 block text-[8px] leading-3.5 text-slate-500">
                             {notification.pesan}
@@ -876,14 +816,13 @@ export default function DashboardPengguna() {
                         href={item.href}
                         aria-current={
                           pathname === item.href ||
-                          (item.href !== "/pelapor" &&
-                            pathname.startsWith(`${item.href}/`))
+                            (item.href !== "/pelapor" &&
+                              pathname.startsWith(`${item.href}/`))
                             ? "page"
                             : undefined}
-                        className={`flex h-full flex-col items-center justify-end gap-1 px-0.5 pb-3 text-center text-[9px] font-medium leading-3 ${
-                          pathname === item.href ||
-                          (item.href !== "/pelapor" &&
-                            pathname.startsWith(`${item.href}/`))
+                        className={`flex h-full flex-col items-center justify-end gap-1 px-0.5 pb-3 text-center text-[9px] font-medium leading-3 ${pathname === item.href ||
+                            (item.href !== "/pelapor" &&
+                              pathname.startsWith(`${item.href}/`))
                             ? "text-[#107b73]"
                             : "text-slate-500"}`}>
                         <item.icon className="h-5 w-5 shrink-0" />

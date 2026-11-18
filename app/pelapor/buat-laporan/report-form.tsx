@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
 import { useRef, useState } from "react";
 import type { ChangeEvent, FormEvent, ReactNode } from "react";
 
@@ -164,13 +163,6 @@ export default function ReportForm({
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [caseId, setCaseId] = useState("");
-  const initials = reporterName
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-
   async function addFiles(fileList: FileList | File[]) {
     const selected = Array.from(fileList);
     const remaining = MAX_FILES - attachments.length;
@@ -295,124 +287,14 @@ export default function ReportForm({
   }
 
   return (
-    <main className="min-h-screen bg-[#f3f6fa] text-[#193652] md:flex">
-      <aside className="flex w-full shrink-0 flex-col bg-[#193652] text-white md:sticky md:top-0 md:h-screen md:w-60">
-        <div className="flex items-center justify-between px-5 py-5 md:block md:px-6 md:py-7">
-          <div>
-            <span className="text-sm font-extrabold tracking-wide">SAFE SPACE</span>
-            <span className="mt-1 block text-[10px] text-slate-300">Portal Pelapor</span>
-          </div>
-          <span className="rounded-full bg-white/10 p-2 text-slate-200 md:hidden">
-            <Icon name="shield" className="h-4 w-4" />
-          </span>
-        </div>
-
-        <nav
-          aria-label="Menu pelapor"
-          className="flex gap-1 overflow-x-auto px-3 pb-3 md:block md:px-3 md:pb-0"
-        >
-          <p className="hidden px-3 pb-3 pt-5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400 md:block">
-            Menu Pelapor
-          </p>
-          {[
-            { label: "Dashboard", href: "/pelapor", icon: "home" },
-            { label: "Buat Laporan", href: "/pelapor/buat-laporan", icon: "edit" },
-            { label: "Emergency Report", href: "#", icon: "alert" },
-            { label: "Case Tracking", href: "#", icon: "search" },
-            { label: "Edukasi", href: "#", icon: "book" },
-          ].map((item, index) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              aria-current={index === 1 ? "page" : undefined}
-              aria-disabled={item.href === "#" ? true : undefined}
-              className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-medium transition-colors ${index === 1
-                  ? "bg-[#0d8277] text-white shadow-sm md:w-full"
-                  : item.label === "Emergency Report"
-                    ? "bg-white/[0.06] text-rose-200 hover:bg-white/10 md:w-full"
-                    : `text-slate-300 hover:bg-white/10 hover:text-white ${index > 2 ? "hidden md:flex" : "md:w-full"
-                    }`
-                }`}
-            >
-              <Icon name={item.icon} className="h-4 w-4 shrink-0" />
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-
-        <div className="mt-auto hidden px-3 pb-5 md:block">
-          <div className="rounded-xl border border-white/10 bg-white/[0.06] p-3">
-            <div className="flex items-center gap-2 text-[11px] font-semibold">
-              <Icon name="shield" className="h-4 w-4 text-[#80ddd2]" /> Data laporan bersifat sensitif
-            </div>
-            <p className="mt-2 text-[10px] leading-4 text-slate-300">
-              Pastikan informasi yang diberikan relevan dan benar.
-            </p>
-          </div>
-          <p className="mt-4 text-center text-[9px] text-slate-500">SAFE SPACE · Portal Pelapor</p>
-        </div>
-      </aside>
-
-      <div className="min-w-0 flex-1">
-        <header className="flex h-[60px] items-center justify-between border-b border-[#e5ebf1] bg-white px-5 sm:px-8">
-          <div>
-            <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#0d8277]">
-              Portal Pelapor
-            </p>
-            <h1 className="mt-0.5 text-sm font-bold">Buat Laporan</h1>
-          </div>
-          <div className="flex items-center gap-3 sm:gap-4">
-            <button
-              type="button"
-              aria-label="Notifikasi"
-              className="relative rounded-full p-2 text-slate-500 hover:bg-slate-50"
-            >
-              <Icon name="bell" className="h-[18px] w-[18px]" />
-              <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-rose-500" />
-            </button>
-            <span className="h-6 border-l border-slate-200" />
-            <details className="group relative">
-              <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg p-1.5 hover:bg-slate-50 [&::-webkit-details-marker]:hidden">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6f4f2] text-[10px] font-bold text-[#0d8277]">
-                  {initials}
-                </span>
-                <span className="hidden text-left sm:block">
-                  <span className="block max-w-[150px] truncate text-[11px] font-semibold">
-                    {reporterName}
-                  </span>
-                  <span className="block text-[9px] text-slate-400">Pelapor</span>
-                </span>
-                <Icon
-                  name="chevron"
-                  className="h-3.5 w-3.5 rotate-90 text-slate-400 transition-transform group-open:-rotate-90"
-                />
-              </summary>
-              <div className="absolute right-0 top-full z-20 mt-2 w-48 rounded-lg border border-[#e1e8ef] bg-white p-1.5 shadow-lg">
-                <div className="border-b border-slate-100 px-3 py-2 sm:hidden">
-                  <p className="truncate text-[11px] font-semibold">{reporterName}</p>
-                  <p className="text-[9px] text-slate-400">{reporterType}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => void signOut({ callbackUrl: "/login" })}
-                  className="flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-left text-xs font-medium text-rose-600 hover:bg-rose-50"
-                >
-                  <Icon name="arrow" className="h-4 w-4 rotate-180" />
-                  Logout
-                </button>
-              </div>
-            </details>
-          </div>
-        </header>
-
-        <form ref={formRef} onSubmit={handleSubmit} className="mx-auto flex min-h-[calc(100vh-60px)] w-full max-w-[1500px] flex-col px-4 pb-24 sm:px-6 lg:px-8">
+        <form ref={formRef} onSubmit={handleSubmit} className="mx-auto flex min-h-[calc(100vh-60px)] w-full max-w-[1500px] flex-col px-4 pb-40 sm:px-6 lg:px-8 lg:pb-24">
           <div className="flex flex-wrap items-end justify-between gap-3 pb-4 pt-5 sm:pt-6">
             <div>
               <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#0d8277]">Pelaporan Kasus</p>
               <h2 className="mt-1 text-[22px] font-bold leading-tight text-[#193652]">Buat Laporan</h2>
               <p className="mt-1.5 text-xs text-slate-500">Gunakan formulir ini untuk menyampaikan kejadian kepada Satgas PPKS secara aman dan terarah.</p>
             </div>
-            <Link href="/" className="mb-0.5 inline-flex items-center gap-1 text-[11px] font-semibold text-[#0d8277] hover:text-[#075e57]">
+            <Link href="/pelapor" className="mb-0.5 inline-flex items-center gap-1 text-[11px] font-semibold text-[#0d8277] hover:text-[#075e57]">
               <span className="rotate-180"><Icon name="arrow" className="h-3.5 w-3.5" /></span>
               Kembali ke Dashboard
             </Link>
@@ -453,7 +335,7 @@ export default function ReportForm({
                 </div>
               )}
 
-              <div className="grid flex-1 items-start gap-4 pb-24 lg:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.86fr)]">
+              <div className="grid flex-1 items-start gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.86fr)] lg:pb-24">
                 <section className="rounded-xl border border-[#e4eaf0] bg-white p-4 shadow-[0_2px_8px_rgba(25,54,82,0.04)] sm:p-5">
                   <CardHeading step="1" title="Informasi Kejadian" subtitle="Lengkapi informasi utama mengenai kejadian yang ingin dilaporkan." icon="file" />
 
@@ -589,7 +471,7 @@ export default function ReportForm({
                 </div>
               </div>
 
-              <footer className="fixed inset-x-0 bottom-0 z-20 border-t border-[#e4eaf0] bg-white/95 px-4 py-3 backdrop-blur sm:px-6 md:left-60 lg:px-8">
+              <footer className="fixed inset-x-0 bottom-20 z-20 border-t border-[#e4eaf0] bg-white/95 px-4 py-3 backdrop-blur sm:px-6 lg:bottom-0 lg:left-64 lg:px-8">
                 <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-3">
                   <p className="hidden items-center gap-2 text-[10px] leading-4 text-slate-500 sm:flex">
                     <Icon name="shield" className="h-4 w-4 shrink-0 text-[#0d8277]" />
@@ -606,7 +488,5 @@ export default function ReportForm({
             </>
           )}
         </form>
-      </div>
-    </main>
   );
 }

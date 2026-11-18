@@ -263,7 +263,7 @@ function getInitials(name: string) {
 const NAV_ITEMS = [
   { href: "/pelapor", label: "Dashboard", icon: LayoutDashboard },
   { href: "/pelapor/buat-laporan", label: "Buat Laporan", icon: FileText },
-  { href: "/case-tracking", label: "Lihat Status Laporan", icon: Search},
+  { href: "/pelapor/case-tracking", label: "Lihat Status Laporan", icon: Search},
   { href: "/edukasi", label: "Edukasi", icon: BookOpen },
 ];
 
@@ -662,7 +662,7 @@ export default function DashboardPengguna() {
                   href={
                     quickAccess.find(
                       (item) => item.label === "Lihat Status Laporan"
-                    )?.path ?? "/case-tracking"
+                    )?.path ?? "/pelapor/case-tracking"
                   }
                   className="flex items-center gap-1 text-[9px] font-semibold text-[#0d8277] hover:underline">
                   Lihat Semua
@@ -725,7 +725,7 @@ export default function DashboardPengguna() {
                                   quickAccess.find(
                                     (item) =>
                                       item.label === "Lihat Status Laporan"
-                                  )?.path ?? "/case-tracking"
+                                  )?.path ?? "/pelapor/case-tracking"
                                 }
                                 className="font-semibold text-[#0d8277] hover:underline">
                                 Lihat Status

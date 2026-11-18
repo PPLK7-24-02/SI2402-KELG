@@ -141,7 +141,7 @@ export async function GET() {
       {
         label: "Lihat Status Laporan",
         deskripsi: "Pantau perkembangan laporan.",
-        path: "/case-tracking",
+        path: "/pelapor/case-tracking",
       },
       {
         label: "Buka Halaman Edukasi",

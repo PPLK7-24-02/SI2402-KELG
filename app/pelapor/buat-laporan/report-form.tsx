@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import type { ChangeEvent, FormEvent, ReactNode } from "react";
-import PelaporLayout from "../components/PelaporLayout";
 
 type Category = { idKategori: string; nama: string };
 type Location = { idLokasi: string; namaGedung: string; area: string };
@@ -288,11 +287,6 @@ export default function ReportForm({
   }
 
   return (
-    <PelaporLayout
-      pageTitle="Buat Laporan"
-      userName={reporterName}
-      userType={reporterType}
-    >
         <form ref={formRef} onSubmit={handleSubmit} className="mx-auto flex min-h-[calc(100vh-60px)] w-full max-w-[1500px] flex-col px-4 pb-40 sm:px-6 lg:px-8 lg:pb-24">
           <div className="flex flex-wrap items-end justify-between gap-3 pb-4 pt-5 sm:pt-6">
             <div>
@@ -494,6 +488,5 @@ export default function ReportForm({
             </>
           )}
         </form>
-    </PelaporLayout>
   );
 }

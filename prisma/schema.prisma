@@ -284,6 +284,8 @@ model HasilPemeriksaan {
   kesimpulan         String               @db.Text
   tindakLanjut       String               @db.Text
   tanggalTindakan    DateTime?
+  realisasiTindakan  String?              @db.Text
+  detailTindakan     String?              @db.Text
 
   laporanId String
   satgasId  String

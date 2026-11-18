@@ -1652,6 +1652,8 @@ export const HasilPemeriksaanScalarFieldEnum = {
   kesimpulan: 'kesimpulan',
   tindakLanjut: 'tindakLanjut',
   tanggalTindakan: 'tanggalTindakan',
+  realisasiTindakan: 'realisasiTindakan',
+  detailTindakan: 'detailTindakan',
   laporanId: 'laporanId',
   satgasId: 'satgasId'
 } as const
@@ -1862,6 +1864,8 @@ export const HasilPemeriksaanOrderByRelevanceFieldEnum = {
   hasil: 'hasil',
   kesimpulan: 'kesimpulan',
   tindakLanjut: 'tindakLanjut',
+  realisasiTindakan: 'realisasiTindakan',
+  detailTindakan: 'detailTindakan',
   laporanId: 'laporanId',
   satgasId: 'satgasId'
 } as const

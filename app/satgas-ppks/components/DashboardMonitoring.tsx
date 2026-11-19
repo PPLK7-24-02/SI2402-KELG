@@ -1,49 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { signOut } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 
 import type { DashboardMonitoringData } from "@/app/api/satgas-ppks/dashboard/route";
 import {
   AlertTriangle,
   ArrowRight,
-  BarChart2,
-  Bell,
-  BookOpen,
   CheckCircle,
-  ChevronRight,
-  ClipboardCheck,
   Clock,
   FileText,
-  FolderOpen,
   History,
-  LayoutDashboard,
-  LogOut,
-  Menu,
   RefreshCw,
   Search,
   ShieldCheck,
-  Siren,
   Video,
-  X,
 } from "./icons";
+import SatgasFrame from "./SatgasFrame";
 
 type SatgasInfo = { name: string; email: string; initials: string };
 type JenisPeriode = "bulanan" | "semester" | "tahunan" | "rentang";
 type TabDistribusi = "status" | "kategori" | "lokasi";
-
-const NAV_ITEMS = [
-  { href: "/satgas-ppks", label: "Dashboard", icon: LayoutDashboard, active: true },
-  { href: "/satgas-ppks/daftar-laporan", label: "Manajemen Laporan", icon: FileText },
-  { href: "/satgas-ppks/monitoring-cctv", label: "Monitoring CCTV", icon: Video },
-  { href: "/satgas-ppks/pengelolaan-bukti", label: "Pengelolaan Bukti", icon: FolderOpen },
-  { href: "/satgas-ppks/incident-alert", label: "Incident Alert AI", icon: Siren },
-  { href: "/satgas-ppks/hasil-pemeriksaan", label: "Hasil Pemeriksaan", icon: ClipboardCheck },
-  { href: "/satgas-ppks/riwayat-penanganan", label: "Riwayat Penanganan", icon: History },
-  { href: "/satgas-ppks/statistik-kasus", label: "Statistik Kasus", icon: BarChart2 },
-  { href: "/satgas-ppks/manajemen-edukasi", label: "Manajemen Edukasi", icon: BookOpen },
-];
 
 const PILIHAN_PERIODE: { value: JenisPeriode; label: string }[] = [
   { value: "bulanan", label: "Bulanan" },
@@ -307,8 +284,6 @@ export default function DashboardMonitoring({ satgas }: { satgas: SatgasInfo }) 
     () => Array.from({ length: 5 }, (_, i) => sekarang.getFullYear() - i),
     [sekarang]
   );
-
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [jenisPeriode, setJenisPeriode] = useState<JenisPeriode>("bulanan");
   const [bulan, setBulan] = useState(formatIso(sekarang).slice(0, 7));
   const [semester, setSemester] = useState(opsiSemester[0].value);
@@ -413,129 +388,13 @@ export default function DashboardMonitoring({ satgas }: { satgas: SatgasInfo }) 
     : [];
 
   return (
-    <div className="flex min-h-screen bg-[#f5f8fb]" style={{ fontFamily: "'Inter', 'Geist', Arial, sans-serif" }}>
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-20 bg-black/40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <aside
-        className={`
-          fixed inset-y-0 left-0 z-30 w-64 flex-col bg-[#0f2133] text-white
-          transition-transform duration-300
-          ${sidebarOpen ? "flex translate-x-0" : "hidden -translate-x-full lg:flex lg:translate-x-0"}
-          lg:relative lg:inset-auto lg:z-auto lg:flex lg:translate-x-0
-        `}
-      >
-        <div className="flex items-center gap-3 border-b border-white/10 px-5 py-5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#107b73] text-white">
-            <ShieldCheck className="h-5 w-5" />
-          </span>
-          <div>
-            <p className="text-[13px] font-black tracking-wider">SAFE SPACE</p>
-            <p className="text-[10px] text-white/50">Satgas PPKS</p>
-          </div>
-          <button
-            className="ml-auto rounded-lg p-1 hover:bg-white/10 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-            aria-label="Tutup navigasi"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Navigasi Satgas PPKS">
-          <p className="mb-2 px-2 text-[10px] font-bold tracking-[0.12em] text-white/40">
-            MENU UTAMA
-          </p>
-          <ul className="space-y-0.5">
-            {NAV_ITEMS.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  aria-current={item.active ? "page" : undefined}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
-                    item.active
-                      ? "bg-[#107b73] text-white shadow-lg shadow-[#107b73]/30"
-                      : "text-white/60 hover:bg-white/8 hover:text-white"
-                  }`}
-                >
-                  <item.icon className="h-[18px] w-[18px] shrink-0" />
-                  <span className="flex-1">{item.label}</span>
-                  {item.active && <ChevronRight className="h-3.5 w-3.5 opacity-60" />}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <div className="border-t border-white/10 px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#107b73] text-sm font-bold text-white">
-              {satgas.initials}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">{satgas.name}</p>
-              <p className="text-[11px] text-white/50">Petugas Satgas PPKS</p>
-            </div>
-            <button
-              type="button"
-              title="Keluar"
-              aria-label="Keluar"
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              className="rounded-lg p-1.5 text-white/40 transition hover:bg-white/10 hover:text-white"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      <main className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex items-center gap-4 border-b border-[#e5edf2] bg-white px-5 py-3 shadow-sm">
-          <button
-            className="rounded-lg p-2 text-[#193652] hover:bg-[#f0f4f8] lg:hidden"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Buka navigasi"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-
-          <div className="min-w-0">
-            <nav className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-[#71839c]" aria-label="Breadcrumb">
-              <span>SAFE SPACE</span>
-              <ChevronRight className="h-3 w-3" />
-              <span className="text-[#107b73]">DASHBOARD</span>
-            </nav>
-            <p className="truncate text-base font-bold text-[#193652]">Dashboard Monitoring PPKS</p>
-          </div>
-
-          <div className="ml-auto flex items-center gap-3">
-            <Link
-              href="/satgas-ppks/incident-alert"
-              aria-label="Incident Alert"
-              className="relative rounded-xl border border-[#e5edf2] bg-white p-2 text-[#60748b] transition hover:border-[#107b73] hover:text-[#107b73]"
-            >
-              <Bell className="h-5 w-5" />
-              {data && data.incidentAlert.some((a) => a.statusVerifikasi === "PENDING") && (
-                <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-red-500" />
-              )}
-            </Link>
-            <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#107b73] text-sm font-bold text-white">
-                {satgas.initials}
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-sm font-semibold text-[#193652]">{satgas.name}</p>
-                <p className="text-[11px] text-[#71839c]">Petugas Satgas PPKS</p>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="flex-1 space-y-6 px-5 py-6 sm:px-8 lg:px-10">
+    <SatgasFrame
+      satgas={satgas}
+      jejak={[{ label: "Dashboard" }]}
+      judul="Dashboard Monitoring PPKS"
+      indikatorNotif={data?.incidentAlert.some((a) => a.statusVerifikasi === "PENDING") ?? false}
+    >
+        <div className="space-y-6">
           {/* Sapaan + filter periode */}
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -655,13 +514,6 @@ export default function DashboardMonitoring({ satgas }: { satgas: SatgasInfo }) 
 
           {data && (
             <div className={`space-y-6 transition-opacity ${loading ? "opacity-60" : ""}`}>
-              {data.dummy && (
-                <div className="flex items-start gap-2 rounded-xl border border-[#fde68a] bg-[#fffbeb] px-4 py-3 text-sm text-[#92400e]">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                  Menampilkan data dummy untuk pratinjau, bukan data dari database.
-                </div>
-              )}
-
               {/* Kartu ringkasan */}
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {kartu.map((k) => (
@@ -863,7 +715,6 @@ export default function DashboardMonitoring({ satgas }: { satgas: SatgasInfo }) 
             </div>
           )}
         </div>
-      </main>
-    </div>
+    </SatgasFrame>
   );
 }

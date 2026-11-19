@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent, ReactNode } from "react";
 
 type Category = { idKategori: string; nama: string };
@@ -66,6 +66,10 @@ function Icon({
     send: <><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></>,
     clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
     calendar: <><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></>,
+    image: <><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-5-5L5 21" /></>,
+    video: <><rect x="2" y="6" width="14" height="12" rx="2" /><path d="m16 10 6-3v10l-6-3" /></>,
+    audio: <><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></>,
+    eye: <><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></>,
   };
 
   return (
@@ -145,6 +149,292 @@ function formatBytes(bytes: number) {
     : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
+type JenisLampiran = "gambar" | "video" | "audio" | "pdf" | "dokumen";
+
+function jenisLampiran(file: File): JenisLampiran {
+  if (file.type.startsWith("image/")) return "gambar";
+  if (file.type.startsWith("video/")) return "video";
+  if (file.type.startsWith("audio/")) return "audio";
+  if (file.type === "application/pdf") return "pdf";
+  return "dokumen";
+}
+
+const IKON_LAMPIRAN: Record<JenisLampiran, string> = {
+  gambar: "image",
+  video: "video",
+  audio: "audio",
+  pdf: "file",
+  dokumen: "file",
+};
+
+// PDF dibuka di tab baru; file tetap di browser, tidak diunggah ke server.
+function bukaPdfDiTabBaru(file: File) {
+  const url = URL.createObjectURL(file);
+  window.open(url, "_blank", "noopener");
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
+function PratinjauLampiran({ item, onClose }: { item: Attachment; onClose: () => void }) {
+  const jenis = jenisLampiran(item.file);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Video/audio diputar dari URL sementara milik browser, lalu dibersihkan saat popup ditutup.
+  useEffect(() => {
+    const media = videoRef.current ?? audioRef.current;
+    if (!media) return;
+    const objectUrl = URL.createObjectURL(item.file);
+    media.src = objectUrl;
+    return () => {
+      media.removeAttribute("src");
+      media.load();
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [item.file]);
+
+  useEffect(() => {
+    const tutupDenganEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", tutupDenganEsc);
+    return () => window.removeEventListener("keydown", tutupDenganEsc);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#10263a]/70 p-4"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Pratinjau ${item.file.name}`}
+        className="flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
+      >
+        <div className="flex items-center gap-3 border-b border-[#e3e9ee] px-4 py-3">
+          <Icon name={IKON_LAMPIRAN[jenis]} className="h-4 w-4 shrink-0 text-[#0d8277]" />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-xs font-semibold text-[#193652]">{item.file.name}</span>
+            <span className="block text-[10px] text-[#8b98a4]">{formatBytes(item.file.size)}</span>
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Tutup pratinjau"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded text-[#8997a4] hover:bg-[#f2f5f7] hover:text-[#193652]"
+          >
+            <Icon name="close" />
+          </button>
+        </div>
+
+        <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-[#f4f7f9] p-4">
+          {jenis === "gambar" && item.preview && (
+            // eslint-disable-next-line @next/next/no-img-element -- data URL lokal, tidak bisa dioptimasi next/image
+            <img src={item.preview} alt={`Pratinjau ${item.file.name}`} className="max-h-[70vh] w-auto max-w-full rounded object-contain" />
+          )}
+          {jenis === "video" && (
+            <video ref={videoRef} controls className="max-h-[70vh] w-full rounded bg-black" />
+          )}
+          {jenis === "audio" && (
+            <div className="flex w-full flex-col items-center gap-4 py-8">
+              <span className="grid h-16 w-16 place-items-center rounded-full bg-[#e7f5f2] text-[#0d8277]">
+                <Icon name="audio" className="h-7 w-7" />
+              </span>
+              <audio ref={audioRef} controls className="w-full max-w-md" />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type RingkasanLaporan = {
+  kategori: string;
+  tanggal: string;
+  waktu: string;
+  lokasi: string;
+  detailLokasi: string;
+  kronologi: string;
+  pihak: InvolvedParty[];
+  jumlahLampiran: number;
+};
+
+const LABEL_PERAN: Record<string, string> = {
+  KORBAN: "Korban",
+  PELAKU: "Terlapor",
+  SAKSI: "Saksi",
+  LAINNYA: "Lainnya",
+};
+
+function formatJenisPengguna(nilai: string) {
+  return nilai.charAt(0).toUpperCase() + nilai.slice(1).toLowerCase();
+}
+
+function BarisRingkasan({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="grid grid-cols-[110px_minmax(0,1fr)] gap-3 py-2 text-[11px]">
+      <dt className="text-[#7a8896]">{label}</dt>
+      <dd className="min-w-0 break-words font-medium text-[#193652]">{children}</dd>
+    </div>
+  );
+}
+
+// Popup konfirmasi sebelum laporan dikirim: ringkasan isi + pilihan identitas pengirim.
+function KonfirmasiKirim({
+  ringkasan,
+  isAnonymous,
+  onUbahAnonim,
+  reporterName,
+  reporterType,
+  onBatal,
+  onKirim,
+}: {
+  ringkasan: RingkasanLaporan;
+  isAnonymous: boolean;
+  onUbahAnonim: (anonim: boolean) => void;
+  reporterName: string;
+  reporterType: string;
+  onBatal: () => void;
+  onKirim: () => void;
+}) {
+  useEffect(() => {
+    const tutupDenganEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onBatal();
+    };
+    window.addEventListener("keydown", tutupDenganEsc);
+    return () => window.removeEventListener("keydown", tutupDenganEsc);
+  }, [onBatal]);
+
+  const pilihanKelas = (aktif: boolean) =>
+    `flex cursor-pointer gap-3 rounded-lg border p-3 transition-colors ${
+      aktif ? "border-[#0d8277] bg-[#eef8f6] ring-1 ring-[#0d8277]" : "border-[#e4eaf0] hover:bg-[#fafcfc]"
+    }`;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#10263a]/60 p-4"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onBatal();
+      }}
+    >
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="judul-konfirmasi-laporan"
+        className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
+      >
+        <div className="flex items-start gap-3 border-b border-[#e3e9ee] px-5 py-4">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#e7f5f2] text-[#0d8277]">
+            <Icon name="check" className="h-[18px] w-[18px]" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 id="judul-konfirmasi-laporan" className="text-sm font-bold text-[#193652]">
+              Periksa kembali laporan Anda
+            </h2>
+            <p className="mt-0.5 text-[11px] text-slate-500">
+              Pastikan data sudah benar dan pilih bagaimana identitas Anda ditampilkan.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onBatal}
+            aria-label="Tutup konfirmasi"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded text-[#8997a4] hover:bg-[#f2f5f7] hover:text-[#193652]"
+          >
+            <Icon name="close" />
+          </button>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+          <dl className="divide-y divide-[#eef2f5] rounded-lg border border-[#e8edf1] px-3">
+            <BarisRingkasan label="Kategori">{ringkasan.kategori}</BarisRingkasan>
+            <BarisRingkasan label="Waktu kejadian">
+              {ringkasan.tanggal} · {ringkasan.waktu}
+            </BarisRingkasan>
+            <BarisRingkasan label="Lokasi">
+              {ringkasan.lokasi}
+              <span className="block text-[10px] font-normal text-slate-500">{ringkasan.detailLokasi}</span>
+            </BarisRingkasan>
+            <BarisRingkasan label="Kronologi">
+              <span className="line-clamp-4 font-normal">{ringkasan.kronologi}</span>
+            </BarisRingkasan>
+            <BarisRingkasan label="Pihak terlibat">
+              {ringkasan.pihak.map((p, i) => (
+                <span key={i} className="block">
+                  {p.nama} <span className="font-normal text-slate-500">({LABEL_PERAN[p.peran] ?? p.peran})</span>
+                </span>
+              ))}
+            </BarisRingkasan>
+            <BarisRingkasan label="Bukti">
+              {ringkasan.jumlahLampiran > 0 ? `${ringkasan.jumlahLampiran} file terlampir` : "Tidak ada lampiran"}
+            </BarisRingkasan>
+          </dl>
+
+          <fieldset className="mt-4 space-y-2">
+            <legend className="mb-2 text-xs font-bold text-[#193652]">Kirim laporan sebagai</legend>
+            <label className={pilihanKelas(!isAnonymous)}>
+              <input
+                type="radio"
+                name="konfirmasi-identitas"
+                checked={!isAnonymous}
+                onChange={() => onUbahAnonim(false)}
+                className="mt-0.5 accent-[#0d8277]"
+              />
+              <span className="min-w-0">
+                <span className="block text-[11px] font-semibold text-[#193652]">
+                  {reporterName}{" "}
+                  <span className="font-normal text-slate-500">({formatJenisPengguna(reporterType)})</span>
+                </span>
+                <span className="mt-0.5 block text-[10px] leading-4 text-slate-500">
+                  Identitas Anda diketahui petugas untuk komunikasi penanganan.
+                </span>
+              </span>
+            </label>
+            <label className={pilihanKelas(isAnonymous)}>
+              <input
+                type="radio"
+                name="konfirmasi-identitas"
+                checked={isAnonymous}
+                onChange={() => onUbahAnonim(true)}
+                className="mt-0.5 accent-[#0d8277]"
+              />
+              <span className="min-w-0">
+                <span className="block text-[11px] font-semibold text-[#193652]">Anonim</span>
+                <span className="mt-0.5 block text-[10px] leading-4 text-slate-500">
+                  Nama Anda tidak ditampilkan pada informasi laporan.
+                </span>
+              </span>
+            </label>
+          </fieldset>
+        </div>
+
+        <div className="flex flex-col-reverse gap-2 border-t border-[#e3e9ee] px-5 py-3 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onBatal}
+            className="inline-flex h-10 items-center justify-center rounded-md border border-[#e4eaf0] px-4 text-xs font-semibold text-slate-600 hover:bg-[#f6f8f9]"
+          >
+            Periksa lagi
+          </button>
+          <button
+            type="button"
+            onClick={onKirim}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#0d8277] px-4 text-xs font-semibold text-white hover:bg-[#076b62]"
+          >
+            <Icon name="send" className="h-3.5 w-3.5" />
+            {isAnonymous ? "Ya, kirim secara anonim" : "Ya, kirim laporan"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ReportForm({
   categories,
   locations,
@@ -156,6 +446,7 @@ export default function ReportForm({
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [pratinjau, setPratinjau] = useState<Attachment | null>(null);
   const [parties, setParties] = useState<InvolvedParty[]>([{ nama: "", peran: "KORBAN" }]);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -163,6 +454,53 @@ export default function ReportForm({
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [caseId, setCaseId] = useState("");
+  const [konfirmasi, setKonfirmasi] = useState<RingkasanLaporan | null>(null);
+  const sudahDikonfirmasi = useRef(false);
+
+  // Sebelum handleSubmit dijalankan, tampilkan popup konfirmasi lebih dulu.
+  function mintaKonfirmasi(event: FormEvent<HTMLFormElement>) {
+    if (sudahDikonfirmasi.current) {
+      sudahDikonfirmasi.current = false;
+      void handleSubmit(event);
+      return;
+    }
+
+    event.preventDefault();
+    const form = event.currentTarget;
+    const pihak = parties
+      .filter((party) => party.nama.trim())
+      .map((party) => ({ ...party, nama: party.nama.trim() }));
+
+    // Data belum lengkap: biarkan handleSubmit yang menampilkan pesan error-nya.
+    if (!form.checkValidity() || !pihak.length) {
+      void handleSubmit(event);
+      return;
+    }
+
+    const data = new FormData(form);
+    const kategori = categories.find((c) => c.idKategori === data.get("kategoriId"));
+    const lokasi = locations.find((l) => l.idLokasi === data.get("lokasiId"));
+    const tanggal = String(data.get("tanggalKejadian") ?? "");
+
+    setKonfirmasi({
+      kategori: kategori?.nama ?? "-",
+      tanggal: tanggal
+        ? new Intl.DateTimeFormat("id-ID", { dateStyle: "long" }).format(new Date(`${tanggal}T00:00`))
+        : "-",
+      waktu: String(data.get("waktuKejadian") ?? "-"),
+      lokasi: lokasi ? `${lokasi.namaGedung} – ${lokasi.area}` : "-",
+      detailLokasi: String(data.get("detailLokasi") ?? ""),
+      kronologi: String(data.get("kronologi") ?? ""),
+      pihak,
+      jumlahLampiran: attachments.length,
+    });
+  }
+
+  function kirimSetelahKonfirmasi() {
+    setKonfirmasi(null);
+    sudahDikonfirmasi.current = true;
+    formRef.current?.requestSubmit();
+  }
   async function addFiles(fileList: FileList | File[]) {
     const selected = Array.from(fileList);
     const remaining = MAX_FILES - attachments.length;
@@ -205,6 +543,13 @@ export default function ReportForm({
 
   function removeAttachment(id: string) {
     setAttachments((current) => current.filter((item) => item.id !== id));
+    setPratinjau((current) => (current?.id === id ? null : current));
+  }
+
+  function lihatLampiran(item: Attachment) {
+    const jenis = jenisLampiran(item.file);
+    if (jenis === "pdf") bukaPdfDiTabBaru(item.file);
+    else if (jenis !== "dokumen") setPratinjau(item);
   }
 
   function updateParty(index: number, field: keyof InvolvedParty, value: string) {
@@ -287,7 +632,7 @@ export default function ReportForm({
   }
 
   return (
-        <form ref={formRef} onSubmit={handleSubmit} className="mx-auto flex min-h-[calc(100vh-60px)] w-full max-w-[1500px] flex-col px-4 pb-40 sm:px-6 lg:px-8 lg:pb-24">
+        <form ref={formRef} onSubmit={mintaKonfirmasi} className="mx-auto flex min-h-[calc(100vh-60px)] w-full max-w-[1500px] flex-col px-4 pb-40 sm:px-6 lg:px-8 lg:pb-24">
           <div className="flex flex-wrap items-end justify-between gap-3 pb-4 pt-5 sm:pt-6">
             <div>
               <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#0d8277]">Pelaporan Kasus</p>
@@ -434,18 +779,48 @@ export default function ReportForm({
 
                     {attachments.length > 0 && (
                       <ul className="mt-3 space-y-2">
-                        {attachments.map((item) => (
+                        {attachments.map((item) => {
+                          const jenis = jenisLampiran(item.file);
+                          const bisaDilihat = jenis !== "dokumen";
+                          return (
                           <li key={item.id} className="flex min-w-0 items-center gap-2.5 rounded-md border border-[#e3e9ee] p-2">
-                            {item.preview ? <img src={item.preview} alt={`Pratinjau ${item.file.name}`} className="h-10 w-10 shrink-0 rounded object-cover" /> : <span className="grid h-10 w-10 shrink-0 place-items-center rounded bg-[#eff4f6] text-[#5b788b]"><Icon name="file" /></span>}
+                            <button
+                              type="button"
+                              disabled={!bisaDilihat}
+                              onClick={() => lihatLampiran(item)}
+                              title={bisaDilihat ? `Lihat ${item.file.name}` : "Pratinjau tidak tersedia untuk dokumen Word"}
+                              className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded bg-[#eff4f6] text-[#5b788b] transition enabled:hover:ring-2 enabled:hover:ring-[#0d8277]/40 disabled:cursor-default"
+                            >
+                              {item.preview ? (
+                                // eslint-disable-next-line @next/next/no-img-element -- data URL lokal, tidak bisa dioptimasi next/image
+                                <img src={item.preview} alt={`Pratinjau ${item.file.name}`} className="h-10 w-10 object-cover" />
+                              ) : (
+                                <Icon name={IKON_LAMPIRAN[jenis]} />
+                              )}
+                            </button>
                             <span className="min-w-0 flex-1">
                               <span className="block truncate text-[10px] font-semibold text-[#193652]">{item.file.name}</span>
-                              <span className="mt-0.5 block text-[9px] text-[#8b98a4]">{formatBytes(item.file.size)}</span>
+                              <span className="mt-0.5 block text-[9px] text-[#8b98a4]">
+                                {formatBytes(item.file.size)}
+                                {!bisaDilihat && " · pratinjau tidak tersedia"}
+                              </span>
                             </span>
+                            {bisaDilihat && (
+                              <button
+                                type="button"
+                                onClick={() => lihatLampiran(item)}
+                                className="inline-flex h-8 shrink-0 items-center gap-1 rounded px-2 text-[10px] font-semibold text-[#0d8277] hover:bg-[#e7f5f2]"
+                              >
+                                <Icon name="eye" className="h-3.5 w-3.5" />
+                                {jenis === "pdf" ? "Buka" : "Lihat"}
+                              </button>
+                            )}
                             <button type="button" title={`Hapus ${item.file.name}`} onClick={() => removeAttachment(item.id)} className="grid h-8 w-8 shrink-0 place-items-center rounded text-[#8997a4] hover:bg-[#fff1ef] hover:text-[#bb5b50]">
                               <Icon name="close" />
                             </button>
                           </li>
-                        ))}
+                          );
+                        })}
                       </ul>
                     )}
                   </section>
@@ -486,6 +861,18 @@ export default function ReportForm({
                 </div>
               </footer>
             </>
+          )}
+          {pratinjau && <PratinjauLampiran item={pratinjau} onClose={() => setPratinjau(null)} />}
+          {konfirmasi && (
+            <KonfirmasiKirim
+              ringkasan={konfirmasi}
+              isAnonymous={isAnonymous}
+              onUbahAnonim={setIsAnonymous}
+              reporterName={reporterName}
+              reporterType={reporterType}
+              onBatal={() => setKonfirmasi(null)}
+              onKirim={kirimSetelahKonfirmasi}
+            />
           )}
         </form>
   );

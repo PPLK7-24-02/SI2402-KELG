@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import DaftarLaporanShell from "./components/DaftarLaporanShell";
-import { DUMMY_LAPORAN } from "./dummy-data";
 import type { LaporanRow } from "./components/types";
 
 export const metadata = {
@@ -12,7 +11,7 @@ export const metadata = {
     "Halaman daftar seluruh laporan kasus yang diterima oleh Satgas PPKS Telkom University.",
 };
 
-async function getLaporan(): Promise<LaporanRow[]> {
+async function getLaporan(): Promise<{ laporan: LaporanRow[]; gagalMemuat: boolean }> {
   try {
     const laporan = await prisma.laporan.findMany({
       orderBy: { createdAt: "desc" },
@@ -37,17 +36,15 @@ async function getLaporan(): Promise<LaporanRow[]> {
       },
     });
 
-    if (!laporan || laporan.length === 0) {
-      return DUMMY_LAPORAN;
-    }
-
-    return laporan as unknown as LaporanRow[];
-  } catch (error) {
-    console.warn(
-      "[DAFTAR_LAPORAN] Database belum memiliki data atau belum terhubung, menampilkan data dummy:",
-      error
+    // Nama pelapor anonim disembunyikan di server agar tidak ikut terkirim ke browser.
+    const hasil = laporan.map((l) =>
+      l.isAnonim ? { ...l, pelapor: { nama: "Anonim", jenisPengguna: null } } : l
     );
-    return DUMMY_LAPORAN;
+
+    return { laporan: hasil as unknown as LaporanRow[], gagalMemuat: false };
+  } catch (error) {
+    console.error("[DAFTAR_LAPORAN] Gagal mengambil data laporan:", error);
+    return { laporan: [], gagalMemuat: true };
   }
 }
 
@@ -62,7 +59,7 @@ export default async function DaftarLaporanPage() {
     redirect("/login");
   }
 
-  const laporan = await getLaporan();
+  const { laporan, gagalMemuat } = await getLaporan();
 
   const satgas = {
     name: session?.user?.name ?? "Satgas PPKS Tel-U",
@@ -75,6 +72,6 @@ export default async function DaftarLaporanPage() {
       .toUpperCase(),
   };
 
-  return <DaftarLaporanShell laporan={laporan} satgas={satgas} />;
+  return <DaftarLaporanShell laporan={laporan} satgas={satgas} gagalMemuat={gagalMemuat} />;
 }
 

@@ -3,12 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { buatDashboardDummy } from "./dummy";
 
 export const runtime = "nodejs";
-
-// Sementara: ubah ke false untuk kembali memakai data dari database.
-const PAKAI_DATA_DUMMY = true;
 
 const HARI_MS = 86_400_000;
 const MAKS_HARI_PER_HARIAN = 62;
@@ -67,7 +63,6 @@ export type DashboardMonitoringData = {
     createdAt: string;
   }[];
   diperbaruiPada: string;
-  dummy?: boolean;
 };
 
 const LABEL_STATUS: Record<string, string> = {
@@ -179,16 +174,6 @@ export async function GET(request: NextRequest) {
       { success: false, message: "Rentang periode maksimal 5 tahun." },
       { status: 400 }
     );
-  }
-
-  if (PAKAI_DATA_DUMMY) {
-    return NextResponse.json({
-      success: true,
-      data: buatDashboardDummy(dari, akhirEksklusif, {
-        dari: params.get("dari")!,
-        sampai: params.get("sampai")!,
-      }),
-    });
   }
 
   const awalSebelumnya = new Date(dari);

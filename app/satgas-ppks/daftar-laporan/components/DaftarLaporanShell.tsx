@@ -3,22 +3,11 @@
 import Link from "next/link";
 import { useState, useMemo } from "react";
 import type { LaporanRow, SatgasInfo } from "./types";
+import SatgasFrame from "../../components/SatgasFrame";
 import {
   ShieldCheck,
-  LayoutDashboard,
   FileText,
-  Video,
-  FolderOpen,
-  Siren,
   ClipboardCheck,
-  History,
-  BarChart2,
-  BookOpen,
-  Bell,
-  ChevronRight,
-  LogOut,
-  Menu,
-  X,
   AlertTriangle,
   Clock,
   CheckCircle,
@@ -31,6 +20,7 @@ import {
 interface Props {
   laporan: LaporanRow[];
   satgas: SatgasInfo;
+  gagalMemuat?: boolean;
 }
 
 const STATUS_CONFIG: Record<
@@ -83,39 +73,6 @@ const URGENSI_CONFIG: Record<
   TINGGI: { label: "Tinggi", color: "text-[#dc2626]", dot: "bg-[#ef4444]" },
   DARURAT: { label: "Darurat", color: "text-[#9333ea]", dot: "bg-[#a855f7]" },
 };
-
-const NAV_ITEMS = [
-  { href: "/satgas-ppks", label: "Dashboard", icon: "dashboard" },
-  {
-    href: "/satgas-ppks/daftar-laporan",
-    label: "Manajemen Laporan",
-    icon: "laporan",
-    active: true,
-  },
-  { href: "/satgas-ppks/monitoring-cctv", label: "Monitoring CCTV", icon: "cctv" },
-  { href: "/satgas-ppks/pengelolaan-bukti", label: "Pengelolaan Bukti", icon: "bukti" },
-  { href: "/satgas-ppks/incident-alert", label: "Incident Alert AI", icon: "alert", badge: 3 },
-  { href: "/satgas-ppks/hasil-pemeriksaan", label: "Hasil Pemeriksaan", icon: "periksa" },
-  { href: "/satgas-ppks/riwayat-penanganan", label: "Riwayat Penanganan", icon: "riwayat" },
-  { href: "/satgas-ppks/statistik-kasus", label: "Statistik Kasus", icon: "statistik" },
-  { href: "/satgas-ppks/manajemen-edukasi", label: "Manajemen Edukasi", icon: "edukasi" },
-];
-
-function NavIcon({ type }: { type: string }) {
-  const cls = "w-[18px] h-[18px] shrink-0";
-  switch (type) {
-    case "dashboard": return <LayoutDashboard className={cls} />;
-    case "laporan": return <FileText className={cls} />;
-    case "cctv": return <Video className={cls} />;
-    case "bukti": return <FolderOpen className={cls} />;
-    case "alert": return <Siren className={cls} />;
-    case "periksa": return <ClipboardCheck className={cls} />;
-    case "riwayat": return <History className={cls} />;
-    case "statistik": return <BarChart2 className={cls} />;
-    case "edukasi": return <BookOpen className={cls} />;
-    default: return <FileText className={cls} />;
-  }
-}
 
 function formatDate(dt: string | Date) {
   return new Intl.DateTimeFormat("id-ID", {
@@ -171,8 +128,7 @@ function NeedsAttentionBadge({ status }: { status: string }) {
   return null;
 }
 
-export default function DaftarLaporanShell({ laporan, satgas }: Props) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+export default function DaftarLaporanShell({ laporan, satgas, gagalMemuat = false }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("SEMUA");
   const [filterUrgensi, setFilterUrgensi] = useState("SEMUA");
@@ -213,154 +169,21 @@ export default function DaftarLaporanShell({ laporan, satgas }: Props) {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#f5f8fb]" style={{ fontFamily: "'Inter', 'Geist', Arial, sans-serif" }}>
-      {/* ── Sidebar ────────────────────────────────────────────── */}
-      {/* Mobile backdrop */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-20 bg-black/40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <aside
-        id="satgas-sidebar"
-        className={`
-          fixed inset-y-0 left-0 z-30 w-64 flex-col bg-[#0f2133] text-white
-          transition-transform duration-300
-          ${sidebarOpen ? "flex translate-x-0" : "hidden -translate-x-full lg:flex lg:translate-x-0"}
-          lg:relative lg:inset-auto lg:z-auto lg:flex lg:translate-x-0
-        `}
-      >
-        {/* Logo */}
-        <div className="flex items-center gap-3 border-b border-white/10 px-5 py-5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#107b73] text-white">
-            <ShieldCheck className="h-5 w-5" />
-          </span>
-          <div>
-            <p className="text-[13px] font-black tracking-wider">SAFE SPACE</p>
-            <p className="text-[10px] text-white/50">Satgas PPKS</p>
+    <SatgasFrame
+      satgas={satgas}
+      jejak={[{ label: "Manajemen Laporan" }]}
+      judul="Manajemen Laporan"
+      indikatorNotif={needsAttentionCount}
+      aksiHeader={
+        needsAttentionCount > 0 && (
+          <div className="hidden items-center gap-2 rounded-xl bg-[#fff3cd] px-3 py-1.5 text-xs font-semibold text-[#92400e] sm:flex">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            {needsAttentionCount} kasus perlu tindakan
           </div>
-          <button
-            className="ml-auto rounded-lg p-1 hover:bg-white/10 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        {/* Nav */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Navigasi Satgas PPKS">
-          <p className="mb-2 px-2 text-[10px] font-bold tracking-[0.12em] text-white/40">
-            MENU UTAMA
-          </p>
-          <ul className="space-y-0.5">
-            {NAV_ITEMS.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  id={`nav-${item.icon}`}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all
-                    ${
-                      item.active
-                        ? "bg-[#107b73] text-white shadow-lg shadow-[#107b73]/30"
-                        : "text-white/60 hover:bg-white/8 hover:text-white"
-                    }`}
-                >
-                  <NavIcon type={item.icon} />
-                  <span className="flex-1">{item.label}</span>
-                  {item.badge ? (
-                    <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                      {item.badge}
-                    </span>
-                  ) : item.active ? (
-                    <ChevronRight className="h-3.5 w-3.5 opacity-60" />
-                  ) : null}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        {/* User info */}
-        <div className="border-t border-white/10 px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#107b73] text-sm font-bold text-white">
-              {satgas.initials}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">{satgas.name}</p>
-              <p className="text-[11px] text-white/50">Petugas Satgas PPKS</p>
-            </div>
-            <Link
-              href="/api/auth/signout"
-              id="btn-logout"
-              title="Keluar"
-              className="rounded-lg p-1.5 text-white/40 transition hover:bg-white/10 hover:text-white"
-            >
-              <LogOut className="h-4 w-4" />
-            </Link>
-          </div>
-        </div>
-      </aside>
-
-      {/* ── Main content ───────────────────────────────────────── */}
-      <main className="flex min-w-0 flex-1 flex-col">
-        {/* Top bar */}
-        <header className="sticky top-0 z-10 flex items-center gap-4 border-b border-[#e5edf2] bg-white px-5 py-3.5 shadow-sm">
-          <button
-            id="btn-toggle-sidebar"
-            className="rounded-lg p-2 text-[#193652] hover:bg-[#f0f4f8] lg:hidden"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Buka navigasi"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-1.5 text-sm text-[#71839c]" aria-label="Breadcrumb">
-            <Link href="/satgas-ppks" className="hover:text-[#107b73]">
-              SAFE SPACE
-            </Link>
-            <ChevronRight className="h-3.5 w-3.5" />
-            <span className="font-semibold text-[#193652]">Manajemen Laporan</span>
-          </nav>
-
-          <div className="ml-auto flex items-center gap-3">
-            {needsAttentionCount > 0 && (
-              <div className="hidden items-center gap-2 rounded-xl bg-[#fff3cd] px-3 py-1.5 text-xs font-semibold text-[#92400e] sm:flex">
-                <AlertTriangle className="h-3.5 w-3.5" />
-                {needsAttentionCount} kasus perlu tindakan
-              </div>
-            )}
-
-            <button
-              id="btn-notif"
-              className="relative rounded-xl border border-[#e5edf2] bg-white p-2 text-[#60748b] transition hover:border-[#107b73] hover:text-[#107b73]"
-              aria-label="Notifikasi"
-            >
-              <Bell className="h-5 w-5" />
-              {needsAttentionCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
-                  {needsAttentionCount}
-                </span>
-              )}
-            </button>
-
-            <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#107b73] text-sm font-bold text-white">
-                {satgas.initials}
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-sm font-semibold text-[#193652]">{satgas.name}</p>
-                <p className="text-[11px] text-[#71839c]">Petugas Satgas PPKS</p>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Page body */}
-        <div className="flex-1 px-5 py-6 sm:px-8 lg:px-10">
+        )
+      }
+    >
+        <div>
           {/* Page heading */}
           <div className="mb-6">
             <h1 className="text-2xl font-black text-[#193652]">Manajemen Laporan</h1>
@@ -368,6 +191,18 @@ export default function DaftarLaporanShell({ laporan, satgas }: Props) {
               Tinjau dan kelola laporan kasus yang diterima oleh Satgas PPKS.
             </p>
           </div>
+
+          {gagalMemuat && (
+            <div
+              role="alert"
+              className="mb-5 flex items-start gap-3 rounded-2xl border border-[#fecaca] bg-[#fef2f2] px-4 py-3"
+            >
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#dc2626]" />
+              <p className="text-sm font-semibold text-[#991b1b]">
+                Data laporan tidak dapat dimuat dari database. Coba muat ulang halaman.
+              </p>
+            </div>
+          )}
 
           {/* Sensitif banner */}
           <div className="mb-5 flex items-start gap-3 rounded-2xl border border-[#bfdbfe] bg-[#eff6ff] px-4 py-3">
@@ -684,7 +519,6 @@ export default function DaftarLaporanShell({ laporan, satgas }: Props) {
             )}
           </div>
         </div>
-      </main>
-    </div>
+    </SatgasFrame>
   );
 }

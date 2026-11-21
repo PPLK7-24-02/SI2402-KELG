@@ -2,18 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import {
-  BookOpen,
-  ChevronRight,
-  FileText,
-  LayoutDashboard,
-  Search,
-  ShieldCheck,
-} from "./icons";
 import SidebarPelapor from "./SidebarPelapor";
 
 type DashboardData = {
@@ -262,24 +254,8 @@ function getInitials(name: string) {
     .join("");
 }
 
-const NAV_ITEMS = [
-  { href: "/pelapor", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/pelapor/buat-laporan", label: "Buat Laporan", icon: FileText },
-  { href: "/pelapor/case-tracking", label: "Lihat Status Laporan", icon: Search },
-  { href: "/edukasi", label: "Edukasi", icon: BookOpen },
-];
-
-const MOBILE_NAV_ITEMS = [
-  NAV_ITEMS[0],
-  NAV_ITEMS[1],
-  null,
-  NAV_ITEMS[2],
-  NAV_ITEMS[3],
-];
-
 export default function DashboardPengguna() {
   const router = useRouter();
-  const pathname = usePathname();
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -623,7 +599,55 @@ export default function DashboardPengguna() {
                 </div>
               ) : dashboard?.laporanTerbaru.length ? (
                 <>
-                  <div className="overflow-x-auto">
+                  <div className="space-y-3 p-3 sm:hidden">
+                    {dashboard.laporanTerbaru.map((report) => (
+                      <article
+                        key={report.idLaporan}
+                        className="rounded-lg border border-[#e4eaf0] bg-white p-3"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="min-w-0 break-all text-[10px] font-bold text-[#193652]">
+                            {report.nomorKasus}
+                          </p>
+                          <span
+                            className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[8px] font-semibold ${
+                              statusStyles[report.status] ??
+                              "bg-slate-100 text-slate-600"
+                            }`}
+                          >
+                            {report.status === "SELESAI" ? (
+                              <Icon name="check" className="h-3 w-3" />
+                            ) : (
+                              <Icon name="clock" className="h-3 w-3" />
+                            )}
+                            {statusLabels[report.status] ?? report.status}
+                          </span>
+                        </div>
+                        <p className="mt-2 text-[9px] leading-4 text-slate-600">
+                          {report.kategori.nama}
+                        </p>
+                        <p className="mt-1 text-[9px] text-slate-400">
+                          {formatDate(report.createdAt)}
+                        </p>
+                        <Link
+                          href={
+                            quickAccess.find(
+                              (item) => item.label === "Lihat Status Laporan"
+                            )?.path ?? "/pelapor/case-tracking"
+                          }
+                          className="mt-3 flex min-h-9 items-center justify-center rounded-lg bg-[#0f2133] px-3 text-[9px] font-semibold text-white hover:bg-[#193652]"
+                        >
+                          Lihat Status
+                          <span className="sr-only">
+                            {" "}
+                            untuk {report.nomorKasus}
+                          </span>
+                        </Link>
+                      </article>
+                    ))}
+                  </div>
+
+                  <div className="hidden overflow-x-auto sm:block">
                     <table className="w-full min-w-[560px] text-left">
                       <thead>
                         <tr className="bg-[#f8fafc] text-[8px] font-bold uppercase tracking-wide text-slate-500">
@@ -796,49 +820,6 @@ export default function DashboardPengguna() {
           </div>
         </main>
 
-        {emergencyReport && (
-          <div className="fixed inset-x-0 bottom-0 z-10 h-20 rounded-t-lg bg-white/95 shadow-[0_-8px_24px_rgba(25,54,82,0.12)] backdrop-blur-sm before:absolute before:left-1/2 before:-top-11 before:h-[88px] before:w-[88px] before:-translate-x-1/2 before:rounded-full before:bg-[#f3f6fa] before:content-[''] lg:hidden">
-            <Link
-              href={emergencyReport.path}
-              aria-label="Emergency Report"
-              className="absolute -top-8 left-1/2 z-10 flex h-[76px] w-[76px] -translate-x-1/2 flex-col items-center justify-center gap-0.5 rounded-full bg-[#e0242f] text-white transition hover:bg-rose-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-300">
-              <Icon name="alert" className="h-6 w-6" />
-              <span className="text-[10px] font-semibold">Darurat</span>
-            </Link>
-            <nav
-              aria-label="Navigasi cepat Pelapor"
-              className="absolute inset-x-0 bottom-0 h-full">
-              <ul className="grid h-full grid-cols-5 items-end px-1 pb-3">
-                {MOBILE_NAV_ITEMS.map((item) =>
-                  item ? (
-                    <li key={item.href} className="h-full min-w-0">
-                      <Link
-                        href={item.href}
-                        aria-current={
-                          pathname === item.href ||
-                            (item.href !== "/pelapor" &&
-                              pathname.startsWith(`${item.href}/`))
-                            ? "page"
-                            : undefined}
-                        className={`flex h-full flex-col items-center justify-end gap-1 px-0.5 pb-3 text-center text-[9px] font-medium leading-3 ${pathname === item.href ||
-                            (item.href !== "/pelapor" &&
-                              pathname.startsWith(`${item.href}/`))
-                            ? "text-[#107b73]"
-                            : "text-slate-500"}`}>
-                        <item.icon className="h-5 w-5 shrink-0" />
-                        <span className="max-w-full">
-                          {item.label === "Lihat Status Laporan"
-                            ? "Status Laporan"
-                            : item.label}
-                        </span>
-                      </Link>
-                    </li>
-                  ) : (
-                    <li key="emergency-slot" aria-hidden="true" />))}
-              </ul>
-            </nav>
-          </div>
-        )}
       </div>
     </div>
   );
